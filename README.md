@@ -5,13 +5,66 @@ O jogador controla Caio, guiado pelo vento até a misteriosa Pedra dos Ancestrai
 
 ---
 
+## Como clonar e rodar
+
+### Requisitos
+
+- [Python 3.9+](https://www.python.org/downloads/) instalado e no PATH
+- Git instalado (`git --version` para confirmar)
+- Nenhuma outra dependência além do Pygame
+
+### Passo a passo
+
+**1. Clone o repositório**
+
+```bash
+git clone https://github.com/vicenteosorioneto/pedra_dos_ancestrais.git
+cd pedra_dos_ancestrais
+```
+
+**2. Crie e ative um ambiente virtual** *(recomendado)*
+
+```bash
+# Windows
+python -m venv .venv
+.venv\Scripts\activate
+
+# macOS / Linux
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+**3. Instale as dependências**
+
+```bash
+pip install pygame>=2.1.0
+```
+
+**4. Rode o jogo**
+
+```bash
+python main.py
+```
+
+Uma janela 1280×720 vai abrir com a tela de título. Pressione qualquer tecla para começar.
+
+### Rodando os testes
+
+```bash
+pytest tests/ -v
+```
+
+Todos os 55 testes devem passar. Nenhum deles abre janela ou depende do Pygame instalado com display.
+
+---
+
 ## Início rápido
 
 ```bash
-# 1. Instalar dependências
+# Versão resumida para quem já tem Python e Git
+git clone https://github.com/vicenteosorioneto/pedra_dos_ancestrais.git
+cd pedra_dos_ancestrais
 pip install pygame>=2.1.0
-
-# 2. Rodar
 python main.py
 ```
 
