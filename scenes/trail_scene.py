@@ -215,6 +215,8 @@ class TrailScene:
         self.dialogue  = DialogueBox()
         self.sys_msg   = SystemMessage()
         self.hud       = HUD(self.karma)
+        self.hud.set_scene_label("ATO 2 — TRILHA")
+        self.hud.set_altar_progress(0)
         self.time      = 0
         self._paused   = False
         self._transitioning = False
@@ -320,6 +322,7 @@ class TrailScene:
             if enemy.alive and enemy.rect.colliderect(self.player.rect):
                 if self.player.take_damage(1):
                     self.fx.camera_shake(4, 12)
+                    self.hud.notify_damage()
 
         # Colisão ataque-inimigo (karma apenas ao matar)
         if self.player.attack_active:
@@ -340,6 +343,7 @@ class TrailScene:
         self.sys_msg.update()
         self.particles.update()
         self.fx.update()
+        self.hud.set_altar_progress(self._altars_activated)
         self.hud.update()
 
         self.camera.update(
