@@ -218,9 +218,19 @@ class CaveScene:
         if self._guardian_fight_started and not self.guardian.defeated:
             self.guardian.update(self.tilemap, self.player.rect)
 
-            # Colisão corpo a corpo
+            # Transição para fase 2 — feedback visual imediato
+            if self.guardian.phase_just_changed:
+                self.fx.camera_shake(6, 20)
+                cx = int(self.guardian.x + self.guardian.w // 2)
+                cy = int(self.guardian.y + self.guardian.h // 2)
+                self.particles.emit_phase_burst(cx, cy)
+                self.sys_msg.show("O Guardião entrou em fúria!", 100)
+
+            # Colisão corpo a corpo — knockback só quando dano aceito (respeita iframes)
             if self.guardian.rect.colliderect(self.player.rect):
-                self.guardian.knockback_player(self.player)
+                if self.player.take_damage(1):
+                    self.guardian.knockback_player(self.player)
+                    self.fx.camera_shake(3, 8)
 
             # Ondas de choque fase 2
             if self.guardian.check_shockwave_hit(self.player.rect):
@@ -238,11 +248,15 @@ class CaveScene:
                 self.guardian.defeat()
                 self._guardian_defeated = True
                 self.karma.ajudou_espirito()
-                # Diálogo do guardião
+                # Explosão de partículas na derrota
+                cx = int(self.guardian.x + self.guardian.w // 2)
+                cy = int(self.guardian.y + self.guardian.h // 2)
+                self.particles.emit_boss_death(cx, cy)
+                self.fx.camera_shake(8, 25)
                 self.dialogue.open("guardiao", on_close=self._on_guardian_dialogue_close)
 
-        # Iracema encontro — proposta com escolha real
-        if not self._iracema_shown and self.player.x > 700:
+        # Iracema encontro — só abre DEPOIS que o guardião foi derrotado
+        if not self._iracema_shown and self.guardian.defeated and self.player.x > 700:
             self._iracema_shown = True
             self.dialogue.open("iracema_proposta", on_close=self._on_iracema_proposta_close)
 
