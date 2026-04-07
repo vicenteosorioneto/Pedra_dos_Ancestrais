@@ -141,6 +141,99 @@ class DialogueBox:
             surf.blit(arr, (bx + bw - 16, by + bh - 14))
 
 
+class ChoiceBox:
+    """
+    Seletor de 2–3 opções que aparece após um diálogo.
+    Navegação: W/S ou setas. Confirmação: X ou ENTER.
+    Visualmente consistente com DialogueBox.
+    """
+    BOX_H   = 56
+    BOX_Y   = SCREEN_H - DialogueBox.BOX_H - 6 - 56  # logo acima do DialogueBox
+
+    def __init__(self):
+        self.active   = False
+        self.options: list[tuple[str, object]] = []   # (label, callback)
+        self.selected = 0
+        self._font    = None
+
+    def _init_font(self):
+        if self._font is None:
+            try:
+                self._font = pygame.font.SysFont("Courier New", 11)
+            except Exception:
+                self._font = pygame.font.Font(None, 14)
+
+    def open(self, options: list[tuple[str, object]]) -> None:
+        """Abre o seletor com a lista de (label, callback)."""
+        self._init_font()
+        self.options  = list(options)
+        self.selected = 0
+        self.active   = True
+
+    def close(self) -> None:
+        self.active  = False
+        self.options = []
+
+    def handle_event(self, event: pygame.event.Event) -> bool:
+        """Processa evento. Retorna True se consumiu o evento."""
+        if not self.active:
+            return False
+        if event.type == pygame.KEYDOWN:
+            if event.key in (pygame.K_UP, pygame.K_w):
+                self.selected = max(0, self.selected - 1)
+                return True
+            if event.key in (pygame.K_DOWN, pygame.K_s):
+                self.selected = min(len(self.options) - 1, self.selected + 1)
+                return True
+            if event.key in (pygame.K_x, pygame.K_k, pygame.K_RETURN, pygame.K_SPACE):
+                self._confirm()
+                return True
+        return False
+
+    def _confirm(self) -> None:
+        if not self.options:
+            return
+        _, callback = self.options[self.selected]
+        self.close()
+        if callable(callback):
+            callback()
+
+    def draw(self, surf: pygame.Surface) -> None:
+        if not self.active:
+            return
+        self._init_font()
+
+        bx = 4
+        by = self.BOX_Y
+        bw = SCREEN_W - 8
+        bh = self.BOX_H
+
+        # Fundo semitransparente
+        box = pygame.Surface((bw, bh))
+        box.set_alpha(215)
+        box.fill(P["hud_bg"])
+        surf.blit(box, (bx, by))
+
+        # Bordas (mesma linguagem visual do DialogueBox)
+        pygame.draw.rect(surf, BLACK, (bx, by, bw, bh), 2)
+        pygame.draw.rect(surf, GOLD,  (bx + 2, by + 2, bw - 4, bh - 4), 1)
+
+        # Prompt de ação
+        prompt = self._font.render("O que você decide?", True, (180, 160, 100))
+        surf.blit(prompt, (bx + 10, by + 6))
+
+        # Opções
+        for i, (label, _) in enumerate(self.options):
+            cursor = "▶ " if i == self.selected else "  "
+            color  = GOLD if i == self.selected else (160, 150, 130)
+            text   = self._font.render(f"{cursor}{label}", True, color)
+            surf.blit(text, (bx + 16, by + 22 + i * 14))
+
+        # Dica de navegação
+        hint = self._font.render("↑↓ navegar   X confirmar", True, (100, 90, 70))
+        surf.blit(hint, (bx + bw - hint.get_width() - 8, by + bh - 12))
+
+
 class SystemMessage:
     """Mensagens temporárias que surgem no topo-centro da tela."""
     def __init__(self):

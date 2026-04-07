@@ -7,7 +7,7 @@ from settings import (
     SCREEN_W, SCREEN_H, TILE_SIZE, PALETTE_CAVE as C, BLACK, GOLD
 )
 from systems.tilemap import Tilemap
-from systems.dialogue import DialogueBox, SystemMessage
+from systems.dialogue import DialogueBox, ChoiceBox, SystemMessage
 from systems.hud import HUD
 from entities.player import Player
 from entities.bat_enemy import BatEnemy
@@ -129,8 +129,9 @@ class CaveScene:
         self.camera    = Camera(self.WORLD_W, self.WORLD_H)
         self.particles = ParticleSystem()
         self.fx        = ScreenEffects(SCREEN_W, SCREEN_H)
-        self.dialogue  = DialogueBox()
-        self.sys_msg   = SystemMessage()
+        self.dialogue    = DialogueBox()
+        self.choice_box  = ChoiceBox()
+        self.sys_msg     = SystemMessage()
         self.hud       = HUD(self.karma)
         self.time      = 0
         self._paused   = False
@@ -175,6 +176,10 @@ class CaveScene:
             if event.type == pygame.KEYDOWN and event.key in (pygame.K_x, pygame.K_k, pygame.K_RETURN, pygame.K_SPACE):
                 self.dialogue.advance()
             return
+        # ChoiceBox tem prioridade sobre input de movimento
+        if self.choice_box.active:
+            self.choice_box.handle_event(event)
+            return
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 self._paused = not self._paused
@@ -185,7 +190,7 @@ class CaveScene:
 
         self.time += 1
 
-        if not self.dialogue.active:
+        if not self.dialogue.active and not self.choice_box.active:
             self.player.update(self.input.poll(), self.tilemap, self.particles)
 
         # Morcegos
@@ -236,10 +241,10 @@ class CaveScene:
                 # Diálogo do guardião
                 self.dialogue.open("guardiao", on_close=self._on_guardian_dialogue_close)
 
-        # Iracema encontro (quando avança muito)
+        # Iracema encontro — proposta com escolha real
         if not self._iracema_shown and self.player.x > 700:
             self._iracema_shown = True
-            self.dialogue.open("iracema", on_close=self._on_iracema_close)
+            self.dialogue.open("iracema_proposta", on_close=self._on_iracema_proposta_close)
 
         self.dialogue.update()
         self.sys_msg.update()
@@ -270,9 +275,29 @@ class CaveScene:
     def _on_guardian_dialogue_close(self):
         self.sys_msg.show("O guardião se dissipou em luz...", 150)
 
+    # ── Fluxo do encontro com Iracema ─────────────────────────────────────────
+
+    def _on_iracema_proposta_close(self):
+        """Após o diálogo da proposta, abre a ChoiceBox."""
+        self.choice_box.open([
+            ("Aceitar o trato",  self._iracema_aceitar),
+            ("Recusar o trato",  self._iracema_recusar),
+        ])
+
+    def _iracema_aceitar(self):
+        """Player honrou o trato: +sabedoria, abre resposta da Iracema."""
+        self.karma.aceitou_trato_honrou()
+        self.karma.conversou_com_npc()   # sapiência por escutar e aceitar
+        self.dialogue.open("iracema_aceita", on_close=self._on_iracema_close)
+
+    def _iracema_recusar(self):
+        """Player recusou: karma neutro para dívida, abre resposta de recusa."""
+        self.karma.recusou_trato()
+        self.dialogue.open("iracema_recusa", on_close=self._on_iracema_close)
+
     def _on_iracema_close(self):
+        """Após qualquer resposta de Iracema, encaminha para o final."""
         self.sys_msg.show("Câmara do Tesouro à frente...", 120)
-        # Após algum tempo, trigger de final
         self._ending_triggered = True
 
     def _show_ending(self):
@@ -321,6 +346,7 @@ class CaveScene:
         # HUD
         self.hud.draw(surf, self.player.hp, self.player.max_hp)
         self.dialogue.draw(surf)
+        self.choice_box.draw(surf)   # renderiza acima do dialogue quando ativo
         self.sys_msg.draw(surf)
 
         # Vinheta de caverna
