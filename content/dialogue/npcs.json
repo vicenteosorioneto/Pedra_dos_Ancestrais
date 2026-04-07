@@ -28,5 +28,27 @@
     "Você não é o primeiro a procurar",
     "alguém aqui dentro.",
     "E não será o último a se perder."
+  ],
+  "iracema_proposta": [
+    "Eu conheço o caminho até o coração da pedra.",
+    "Mas nada aqui é de graça.",
+    "Faço um trato com você:",
+    "eu abro o caminho...",
+    "e você carrega a memória deste lugar",
+    "para quem ainda está lá fora.",
+    "O que você decide?"
+  ],
+  "iracema_aceita": [
+    "Sabia que você viria.",
+    "Sabia desde antes de você nascer.",
+    "Vá. O caminho está aberto.",
+    "E não esqueça o que prometeu."
+  ],
+  "iracema_recusa": [
+    "...",
+    "Tudo bem.",
+    "Outros virão.",
+    "Sempre vêm.",
+    "Mas o caminho... você terá que achar sozinho."
   ]
 }
