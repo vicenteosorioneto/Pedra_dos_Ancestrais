@@ -11,6 +11,19 @@ _loader = DialogueLoader()
 # Compatibilidade retroativa: DIALOGUE_DATA ainda acessível via loader
 DIALOGUE_DATA: dict[str, list[str]] = _loader._data
 
+# Mapeamento canônico de npc_key → nome exibido no diálogo
+_NPC_NAMES: dict[str, str] = {
+    "aldeao_1":         "Aldeão",
+    "aldeao_2":         "Aldeão",
+    "zequinha":         "Seu Zequinha",
+    "comerciante":      "Comerciante",
+    "guardiao":         "Guardião",
+    "iracema":          "Iracema",
+    "iracema_proposta": "Iracema",
+    "iracema_aceita":   "Iracema",
+    "iracema_recusa":   "Iracema",
+}
+
 
 class DialogueBox:
     # Altura e posição da caixa
@@ -50,7 +63,7 @@ class DialogueBox:
         self._init_fonts()
         self.active       = True
         self.lines        = _loader.get(npc_key)
-        self.npc_name     = npc_key.replace("_", " ").title()
+        self.npc_name     = _NPC_NAMES.get(npc_key, npc_key.replace("_", " ").title())
         self.avatar_surf  = avatar_surf
         self.current_line = 0
         self.char_index   = 0.0
