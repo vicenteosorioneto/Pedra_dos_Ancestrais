@@ -2,7 +2,7 @@
 """
 A Pedra dos Ancestrais
 ======================
-Um jogo 2D de plataforma com RPG leve ambientado no sertão nordestino.
+Jogo 2D de plataforma ambientado no sertão nordestino.
 
 Dependências:
   pip install pygame>=2.1.0
@@ -21,7 +21,6 @@ Controles:
 import sys
 import os
 
-# Garante que o diretório do projeto está no path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 try:
@@ -36,4 +35,5 @@ from core.game import Game
 
 if __name__ == "__main__":
     game = Game()
+    game.start()
     game.run()

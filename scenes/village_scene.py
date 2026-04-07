@@ -9,7 +9,6 @@ from settings import (
 from systems.tilemap import Tilemap
 from systems.dialogue import DialogueBox, SystemMessage
 from systems.hud import HUD
-from systems.karma import KarmaSystem
 from entities.player import Player
 from entities.npc import VillagerNPC, ElderNPC
 from core.camera import Camera
@@ -207,9 +206,11 @@ class VillageScene:
 
     NEXT_SCENE_X = (WORLD_COLS - 2) * TILE_SIZE  # saída à direita
 
-    def __init__(self, scene_manager, karma):
+    def __init__(self, scene_manager, bus, karma, input_manager):
         self.scene_manager = scene_manager
+        self.bus           = bus
         self.karma         = karma
+        self.input         = input_manager
         self._ready        = False
 
     def on_enter(self):
@@ -226,7 +227,7 @@ class VillageScene:
         map_data, cols, rows = _build_village_map()
         self.tilemap  = Tilemap(map_data)
         self.camera   = Camera(self.WORLD_W, self.WORLD_H)
-        self.player   = Player(60, 190)  # começa à esquerda
+        self.player   = Player(60, 190, self.bus)  # começa à esquerda
         self.particles= ParticleSystem()
         self.fx       = ScreenEffects(SCREEN_W, SCREEN_H)
         self.dialogue = DialogueBox()
@@ -288,10 +289,8 @@ class VillageScene:
         if not self._ready or self._paused:
             return
 
-        keys = pygame.key.get_pressed()
-
         if not self.dialogue.active:
-            self.player.update(keys, self.tilemap, self.particles)
+            self.player.update(self.input.poll(), self.tilemap, self.particles)
 
         self.dialogue.update()
         self.sys_msg.update()
@@ -390,4 +389,4 @@ class VillageScene:
             if self._transition_timer <= 0:
                 self._transitioning = False
                 from scenes.trail_scene import TrailScene
-                self.scene_manager.replace(TrailScene(self.scene_manager, self.karma, self.player))
+                self.scene_manager.replace(TrailScene(self.scene_manager, self.bus, self.karma, self.input, self.player))

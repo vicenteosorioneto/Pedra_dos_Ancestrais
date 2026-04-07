@@ -103,9 +103,11 @@ class CaveScene:
     WORLD_W    = WORLD_COLS * TILE_SIZE
     WORLD_H    = WORLD_ROWS * TILE_SIZE
 
-    def __init__(self, scene_manager, karma, player=None):
+    def __init__(self, scene_manager, bus, karma, input_manager, player=None):
         self.scene_manager = scene_manager
+        self.bus           = bus
         self.karma         = karma
+        self.input         = input_manager
         self._prev_player  = player
         self._ready        = False
         self._guardian_defeated = False
@@ -137,7 +139,7 @@ class CaveScene:
 
         # Player
         start_y = 17 * TILE_SIZE - Player.H
-        self.player = Player(30, start_y)
+        self.player = Player(30, start_y, self.bus)
         if self._prev_player:
             self.player.hp = max(1, self._prev_player.hp)
 
@@ -181,17 +183,16 @@ class CaveScene:
         if not self._ready or self._paused:
             return
 
-        keys = pygame.key.get_pressed()
         self.time += 1
 
         if not self.dialogue.active:
-            self.player.update(keys, self.tilemap, self.particles)
+            self.player.update(self.input.poll(), self.tilemap, self.particles)
 
         # Morcegos
         for enemy in self.enemies:
             enemy.update(self.tilemap, self.player.rect)
             if enemy.alive and enemy.rect.colliderect(self.player.rect):
-                if self.player.take_damage(1, self.particles):
+                if self.player.take_damage(1):
                     self.fx.camera_shake(4, 12)
 
         # Ataque contra morcegos
@@ -218,7 +219,7 @@ class CaveScene:
 
             # Ondas de choque fase 2
             if self.guardian.check_shockwave_hit(self.player.rect):
-                if self.player.take_damage(1, self.particles):
+                if self.player.take_damage(1):
                     self.fx.camera_shake(5, 15)
 
             # Ataque do player contra guardião
@@ -364,7 +365,8 @@ class EndingScene:
                 # Volta ao início
                 from scenes.intro_scene import IntroScene
                 from systems.karma import KarmaSystem
-                self.scene_manager.replace(IntroScene(self.scene_manager, KarmaSystem()))
+                new_karma = KarmaSystem(self.bus)
+                self.scene_manager.replace(IntroScene(self.scene_manager, self.bus, new_karma, self.input))
 
     def update(self):
         self.time += 1

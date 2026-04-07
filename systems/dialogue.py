@@ -1,41 +1,15 @@
 # systems/dialogue.py — sistema de diálogo com efeito typewriter
 
+from __future__ import annotations
 import pygame
 from settings import SCREEN_W, SCREEN_H, BLACK, GOLD, PALETTE_SERTAO as P
+from systems.dialogue_loader import DialogueLoader
 
-# Textos dos NPCs
-DIALOGUE_DATA = {
-    "aldeao_1": [
-        "Esse vento tá esquisito hoje...",
-        "parece que a Pedra tá chamando."
-    ],
-    "aldeao_2": [
-        "Seu Zequinha foi lá pra cima ontem à noite.",
-        "Eu vi com meus próprios olhos.",
-        "Nunca é boa ideia."
-    ],
-    "comerciante": [
-        "Três homens foram nessa pedra no século passado.",
-        "Nenhum voltou do mesmo jeito, menino."
-    ],
-    "zequinha": [
-        "A pedra chama... mas só entra quem está destinado.",
-        "Se um dia você encontrar o símbolo,",
-        "saiba: o tesouro não alimenta o corpo.",
-        "Ele alimenta o que você mais deseja —",
-        "e cobra o preço mais alto."
-    ],
-    "guardiao": [
-        "Você... tem o sinal.",
-        "Pode passar.",
-        "Mas devia voltar."
-    ],
-    "iracema": [
-        "Você não é o primeiro a procurar",
-        "alguém aqui dentro.",
-        "E não será o último a se perder."
-    ],
-}
+# Loader singleton — lê content/dialogue/npcs.json uma vez
+_loader = DialogueLoader()
+
+# Compatibilidade retroativa: DIALOGUE_DATA ainda acessível via loader
+DIALOGUE_DATA: dict[str, list[str]] = _loader._data
 
 
 class DialogueBox:
@@ -75,7 +49,7 @@ class DialogueBox:
     def open(self, npc_key, avatar_surf=None, on_close=None):
         self._init_fonts()
         self.active       = True
-        self.lines        = DIALOGUE_DATA.get(npc_key, ["..."])
+        self.lines        = _loader.get(npc_key)
         self.npc_name     = npc_key.replace("_", " ").title()
         self.avatar_surf  = avatar_surf
         self.current_line = 0

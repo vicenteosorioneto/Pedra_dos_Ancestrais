@@ -1,92 +1,89 @@
-# core/game.py — loop principal do jogo
+# core/game.py — loop principal do jogo (refatorado)
 
+from __future__ import annotations
 import pygame
 import sys
-from settings import (
-    SCREEN_W, SCREEN_H, WINDOW_W, WINDOW_H, SCALE, FPS, TITLE
-)
+
+from config.display import SCREEN_W, SCREEN_H, WINDOW_W, WINDOW_H, FPS, TITLE
 from core.scene_manager import SceneManager
+from core.event_bus import EventBus
+from core.input_manager import InputManager
 from systems.karma import KarmaSystem
 
 
 class Game:
-    def __init__(self):
+    """
+    Inicializa pygame, gerencia o loop e injeta serviços nas cenas.
+
+    Serviços disponíveis para todas as cenas via parâmetros do construtor:
+        scene_manager : SceneManager  — pilha de cenas
+        bus           : EventBus      — pub/sub desacoplado
+        karma         : KarmaSystem   — rastreamento de karma global
+        input_manager : InputManager  — mapeamento de ações de input
+    """
+
+    def __init__(self) -> None:
         pygame.init()
         pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
 
-        # Janela upscaled
         self.window  = pygame.display.set_mode((WINDOW_W, WINDOW_H))
         pygame.display.set_caption(TITLE)
 
-        # Tenta colocar ícone da janela
         try:
             from art.sprites import get_window_icon
-            icon = get_window_icon()
-            icon_scaled = pygame.transform.scale(icon, (32, 32))
-            pygame.display.set_icon(icon_scaled)
+            icon = pygame.transform.scale(get_window_icon(), (32, 32))
+            pygame.display.set_icon(icon)
         except Exception:
             pass
 
-        # Surface interna de render
-        self.screen = pygame.Surface((SCREEN_W, SCREEN_H))
-        self.clock  = pygame.time.Clock()
+        self.screen  = pygame.Surface((SCREEN_W, SCREEN_H))
+        self.clock   = pygame.time.Clock()
         self.running = True
 
-        # Gerenciadores
+        # ── Serviços compartilhados ───────────────────────────────────────────
+        self.bus           = EventBus()
+        self.karma         = KarmaSystem(self.bus)
+        self.input_manager = InputManager()
         self.scene_manager = SceneManager()
-        self.karma         = KarmaSystem()
 
-        # Carrega cena inicial
+    def start(self) -> None:
+        """Carrega a cena inicial. Chamado por main.py após __init__."""
         from scenes.intro_scene import IntroScene
-        intro = IntroScene(self.scene_manager, self.karma)
+        intro = IntroScene(self.scene_manager, self.bus, self.karma, self.input_manager)
         self.scene_manager.push(intro)
         intro.on_enter()
 
-    def run(self):
+    def run(self) -> None:
         while self.running:
             self._handle_events()
             self._update()
             self._draw()
             self.clock.tick(FPS)
-
         pygame.quit()
         sys.exit()
 
-    def _handle_events(self):
+    def _handle_events(self) -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_F4 and (
-                    pygame.key.get_mods() & pygame.KMOD_ALT
-                ):
+                if event.key == pygame.K_F4 and (pygame.key.get_mods() & pygame.KMOD_ALT):
                     self.running = False
-
-            # Repassa o evento para a cena atual
-            scene = self.scene_manager.current
-            if scene:
+            if scene := self.scene_manager.current:
                 scene.handle_event(event)
-
-        # Aplica mudanças de cena pendentes
         self.scene_manager.apply_pending()
-
         if self.scene_manager.is_empty:
             self.running = False
 
-    def _update(self):
-        scene = self.scene_manager.current
-        if scene:
+    def _update(self) -> None:
+        if scene := self.scene_manager.current:
             scene.update()
         self.scene_manager.apply_pending()
 
-    def _draw(self):
-        # Render na superfície interna 640x360
+    def _draw(self) -> None:
         self.screen.fill((0, 0, 0))
-        scene = self.scene_manager.current
-        if scene:
+        if scene := self.scene_manager.current:
             scene.draw(self.screen)
-
-        # Upscale 2x para a janela 1280x720
         scaled = pygame.transform.scale(self.screen, (WINDOW_W, WINDOW_H))
         self.window.blit(scaled, (0, 0))
         pygame.display.flip()

@@ -74,9 +74,11 @@ def _draw_pedra_castelo_large(surf, cx, cy):
 
 
 class IntroScene:
-    def __init__(self, scene_manager, karma):
+    def __init__(self, scene_manager, bus, karma, input_manager):
         self.scene_manager = scene_manager
-        self.karma = karma
+        self.bus           = bus
+        self.karma         = karma
+        self.input         = input_manager
         self.blink_timer = 0
         self.blink_state = True
         self.particles   = []
@@ -126,7 +128,7 @@ class IntroScene:
 
     def _start_game(self):
         from scenes.village_scene import VillageScene
-        self.scene_manager.replace(VillageScene(self.scene_manager, self.karma))
+        self.scene_manager.replace(VillageScene(self.scene_manager, self.bus, self.karma, self.input))
 
     def update(self):
         self._init()

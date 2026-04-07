@@ -183,9 +183,11 @@ class TrailScene:
     WORLD_H    = WORLD_ROWS * TILE_SIZE
     NEXT_SCENE_X = (WORLD_COLS - 2) * TILE_SIZE
 
-    def __init__(self, scene_manager, karma, player=None):
+    def __init__(self, scene_manager, bus, karma, input_manager, player=None):
         self.scene_manager = scene_manager
+        self.bus           = bus
         self.karma         = karma
+        self.input         = input_manager
         self._prev_player  = player
         self._ready        = False
 
@@ -214,7 +216,7 @@ class TrailScene:
 
         # Reutiliza HP do player anterior
         start_y = 17 * TILE_SIZE - Player.H
-        self.player = Player(30, start_y)
+        self.player = Player(30, start_y, self.bus)
         if self._prev_player:
             self.player.hp = max(1, self._prev_player.hp)
 
@@ -281,11 +283,10 @@ class TrailScene:
         if not self._ready or self._paused:
             return
 
-        keys = pygame.key.get_pressed()
         self.time += 1
 
         if not self.dialogue.active:
-            self.player.update(keys, self.tilemap, self.particles)
+            self.player.update(self.input.poll(), self.tilemap, self.particles)
 
         # Inimigos
         for enemy in self.enemies:
@@ -294,7 +295,7 @@ class TrailScene:
         # Colisão player-inimigo
         for enemy in self.enemies:
             if enemy.alive and enemy.rect.colliderect(self.player.rect):
-                if self.player.take_damage(1, self.particles):
+                if self.player.take_damage(1):
                     self.fx.camera_shake(4, 12)
                     self.karma.enfrentou_inimigo()
 
@@ -345,7 +346,7 @@ class TrailScene:
             if self._transition_timer <= 0:
                 self._transitioning = False
                 from scenes.cave_scene import CaveScene
-                self.scene_manager.replace(CaveScene(self.scene_manager, self.karma, self.player))
+                self.scene_manager.replace(CaveScene(self.scene_manager, self.bus, self.karma, self.input, self.player))
 
         if self.player.x < 0:
             self.player.x = 0
