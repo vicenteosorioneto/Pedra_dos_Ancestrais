@@ -392,7 +392,6 @@ class VillageScene:
 
         # ── Seta de saída à direita ──
         if self.player.x > self.WORLD_W - 80:
-            font = pygame.font.Font(None, 14) if not hasattr(self, '_arrow_font') else self._arrow_font
             if not hasattr(self, '_arrow_font'):
                 try:
                     self._arrow_font = pygame.font.SysFont("Courier New", 11)

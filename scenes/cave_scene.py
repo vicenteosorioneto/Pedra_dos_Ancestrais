@@ -157,6 +157,7 @@ class CaveScene:
         guardian_y = 17 * TILE_SIZE - 44
         self.guardian = GuardianStatue(500, guardian_y)
         self._guardian_fight_started = False
+        self._guardian_death_time    = -1
 
         # Fontes de luz ambiente
         self._light_sources = [
@@ -251,6 +252,7 @@ class CaveScene:
             if self.guardian.hp <= 0 and not self.guardian.defeated:
                 self.guardian.defeat()
                 self._guardian_defeated = True
+                self._guardian_death_time = self.time
                 self.karma.ajudou_espirito()
                 # Explosão de partículas na derrota
                 cx = int(self.guardian.x + self.guardian.w // 2)
@@ -349,8 +351,9 @@ class CaveScene:
         if self._guardian_fight_started and not self.guardian.defeated:
             self.guardian.draw(surf, cam_x, cam_y)
         elif self.guardian.defeated:
-            # Partículas residuais de luz
-            if self.time % 3 == 0 and self.time < self.time + 120:
+            # Partículas residuais de luz nos primeiros 120 frames após derrota
+            elapsed = self.time - self._guardian_death_time
+            if self._guardian_death_time >= 0 and elapsed < 120 and self.time % 3 == 0:
                 gx = self.guardian.x + self.guardian.w // 2
                 gy = self.guardian.y + self.guardian.h // 2
                 self.particles.emit_altar(gx, gy)
