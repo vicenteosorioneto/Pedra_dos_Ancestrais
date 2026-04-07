@@ -22,6 +22,11 @@ class Tilemap:
             return self.data[row][col]
         return 0
 
+    def set_tile(self, col, row, tile_id: int) -> None:
+        """Modifica um tile em tempo de execução (ex: abrir portas, paredes)."""
+        if 0 <= row < self.rows and 0 <= col < self.cols:
+            self.data[row][col] = tile_id
+
     def is_solid_at(self, col, row):
         return is_solid(self.get_tile(col, row))
 
