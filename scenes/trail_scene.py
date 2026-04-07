@@ -58,10 +58,16 @@ def _build_trail_map():
             if 0 <= col < COLS:
                 data[row][col] = 8
 
-    # Altares (3 posições)
+    # Altares (3 posições — sobre plataformas existentes)
     altar_positions = [(20, 17), (38, 15), (55, 13)]
 
-    return data, COLS, ROWS, altar_positions
+    # Parede de bloqueio no fim da trilha (cols 64-66, toda a altura)
+    WALL_COLS = range(64, 67)
+    for col in WALL_COLS:
+        for row in range(0, ROWS):
+            data[row][col] = 8   # pedra_castelo — sólido
+
+    return data, COLS, ROWS, altar_positions, list(WALL_COLS)
 
 
 def _draw_night_sky(surf, cam_x):
@@ -201,7 +207,7 @@ class TrailScene:
         pass
 
     def _setup(self):
-        map_data, cols, rows, altar_positions = _build_trail_map()
+        map_data, cols, rows, altar_positions, wall_cols = _build_trail_map()
         self.tilemap   = Tilemap(map_data)
         self.camera    = Camera(self.WORLD_W, self.WORLD_H)
         self.particles = ParticleSystem()
@@ -234,7 +240,9 @@ class TrailScene:
             for pos in altar_positions
         ]
         self._altars_activated = 0
-        self._portal_open = False
+        self._portal_open      = False
+        self._wall_cols        = wall_cols          # cols a limpar ao abrir portal
+        self._wall_hint_shown  = False              # mostra hint só uma vez
 
         # Tochas
         self.torches = [
@@ -267,17 +275,32 @@ class TrailScene:
 
     def _try_interact_altar(self):
         pr = self.player.rect
-        for altar in self.altars:
+        for i, altar in enumerate(self.altars):
             if abs(pr.centerx - altar.rect.centerx) < 30 and abs(pr.centery - altar.rect.centery) < 40:
                 if not altar.activated:
                     altar.activate()
                     self._altars_activated += 1
                     self.karma.resolveu_puzzle_perfeito()
-                    self.sys_msg.show(f"Altar ativado! ({self._altars_activated}/3)", 90)
+                    # Burst de partículas no momento da ativação
+                    self.particles.emit_phase_burst(int(altar.x) + 7, int(altar.y))
+                    self.sys_msg.show(f"Altar {self._altars_activated} de 3 ativado!", 90)
                     if self._altars_activated >= 3:
-                        self._portal_open = True
-                        self.sys_msg.show("A entrada está aberta!", 150)
+                        self._open_portal()
                 return
+
+    def _open_portal(self):
+        """Remove a parede de bloqueio e abre o portal."""
+        self._portal_open = True
+        # Apaga os tiles da parede no tilemap
+        for col in self._wall_cols:
+            for row in range(self.WORLD_ROWS):
+                self.tilemap.set_tile(col, row, 0)
+        # Burst de luz no local da parede
+        wall_x = self._wall_cols[0] * TILE_SIZE
+        wall_y = 10 * TILE_SIZE
+        self.particles.emit_boss_death(wall_x, wall_y)
+        self.fx.camera_shake(5, 15)
+        self.sys_msg.show("A entrada está aberta!", 180)
 
     def update(self):
         if not self._ready or self._paused:
@@ -292,20 +315,18 @@ class TrailScene:
         for enemy in self.enemies:
             enemy.update(self.tilemap, self.player.rect)
 
-        # Colisão player-inimigo
+        # Colisão player-inimigo (sem karma — karma só ao derrotar)
         for enemy in self.enemies:
             if enemy.alive and enemy.rect.colliderect(self.player.rect):
                 if self.player.take_damage(1):
                     self.fx.camera_shake(4, 12)
-                    self.karma.enfrentou_inimigo()
 
-        # Colisão ataque-inimigo
+        # Colisão ataque-inimigo (karma apenas ao matar)
         if self.player.attack_active:
             ar = self.player.attack_rect
             for enemy in self.enemies:
                 if enemy.alive and ar.colliderect(enemy.rect):
-                    killed = enemy.take_damage(1)
-                    if killed:
+                    if enemy.take_damage(1):
                         enemy.emit_death_particles(self.particles)
                         self.karma.enfrentou_inimigo()
 
@@ -326,13 +347,21 @@ class TrailScene:
             self.player.y + Player.H // 2
         )
 
-        # Indicador altar
+        # Indicador altar — mostra número do altar
         pr = self.player.rect
-        for altar in self.altars:
+        for i, altar in enumerate(self.altars):
             if abs(pr.centerx - altar.rect.centerx) < 30 and abs(pr.centery - altar.rect.centery) < 40:
                 if not altar.activated:
-                    self.hud.show_interaction("examinar altar")
+                    self.hud.show_interaction(f"ativar altar {i + 1}")
                 break
+
+        # Hint quando player toca a parede sem ter os altares todos
+        wall_x = self._wall_cols[0] * TILE_SIZE
+        if (not self._portal_open
+                and not self._wall_hint_shown
+                and self.player.x > wall_x - 40):
+            self._wall_hint_shown = True
+            self.sys_msg.show("Ative os 3 altares para abrir o caminho.", 180)
 
         # Transição para caverna
         if self._portal_open and self.player.x > self.NEXT_SCENE_X - 50:
