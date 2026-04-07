@@ -88,3 +88,14 @@ class ElderNPC(NPC):
             sprite_fn=lambda direction: get_npc_elder(direction),
             patrol_range=0,
         )
+
+
+class ComercianteNPC(NPC):
+    """Comerciante da vila — usa visual de aldeão variante 2."""
+    def __init__(self, x: float, y: float) -> None:
+        super().__init__(
+            x, y,
+            npc_key="comerciante",
+            sprite_fn=lambda direction: get_npc_villager(2, direction),
+            patrol_range=0,
+        )

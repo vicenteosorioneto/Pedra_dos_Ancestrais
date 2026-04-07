@@ -10,7 +10,7 @@ from systems.tilemap import Tilemap
 from systems.dialogue import DialogueBox, SystemMessage
 from systems.hud import HUD
 from entities.player import Player
-from entities.npc import VillagerNPC, ElderNPC
+from entities.npc import VillagerNPC, ElderNPC, ComercianteNPC
 from core.camera import Camera
 from art.fx import ParticleSystem, ScreenEffects
 
@@ -234,17 +234,21 @@ class VillageScene:
         self.sys_msg  = SystemMessage()
         self.hud      = HUD(self.karma)
 
-        # NPCs
-        ground_y = 14 * TILE_SIZE - Player.H  # y do chão para NPCs
-        self.npcs = [
-            VillagerNPC(120, ground_y, variant=0, patrol_range=40),
-            VillagerNPC(340, ground_y, variant=1, patrol_range=0),
-            ElderNPC(480, ground_y),
-            VillagerNPC(600, ground_y, variant=2, patrol_range=0),
+        # NPCs — estrutura única evita bug de desincronização de índices
+        ground_y = 14 * TILE_SIZE - Player.H
+        self._npc_slots = [
+            {"npc": VillagerNPC(120, ground_y, variant=0, patrol_range=40),
+             "key": "aldeao_1",    "name": "Aldeão",          "talked": False},
+            {"npc": VillagerNPC(340, ground_y, variant=1, patrol_range=0),
+             "key": "aldeao_2",    "name": "Aldeão",          "talked": False},
+            {"npc": ElderNPC(480, ground_y),
+             "key": "zequinha",    "name": "Seu Zequinha",    "talked": False},
+            {"npc": ComercianteNPC(680, ground_y),
+             "key": "comerciante", "name": "Comerciante",     "talked": False},
         ]
-        self.npc_keys = ["aldeao_1", "aldeao_2", "zequinha", "aldeao_2"]
-        self.npc_talked = [False] * len(self.npcs)
         self._zequinha_disappeared = False
+        self._transitioning        = False
+        self._transition_timer     = 0
 
         self._paused = False
         self._ready  = True
@@ -269,20 +273,23 @@ class VillageScene:
 
     def _try_interact(self):
         pr = self.player.rect
-        for i, npc in enumerate(self.npcs):
+        for slot in self._npc_slots:
+            npc = slot["npc"]
             if abs(pr.centerx - npc.rect.centerx) < 40 and abs(pr.centery - npc.rect.centery) < 40:
-                key = self.npc_keys[i]
-                if not self.npc_talked[i]:
-                    self.npc_talked[i] = True
+                if not slot["talked"]:
+                    slot["talked"] = True
                     self.karma.conversou_com_npc()
-                avatar = npc.get_avatar()
 
-                def on_close(idx=i, npc_key=key):
-                    if npc_key == "zequinha" and not self._zequinha_disappeared:
+                def on_close(s=slot):
+                    if s["key"] == "zequinha" and not self._zequinha_disappeared:
                         self._zequinha_disappeared = True
+                        # Partículas de desaparecimento espiritual
+                        cx = int(s["npc"].x + s["npc"].W // 2)
+                        cy = int(s["npc"].y + s["npc"].H // 2)
+                        self.particles.emit_boss_death(cx, cy)
                         self.sys_msg.show("Zequinha... sumiu?", 150)
 
-                self.dialogue.open(key, avatar_surf=avatar, on_close=on_close)
+                self.dialogue.open(slot["key"], avatar_surf=npc.get_avatar(), on_close=on_close)
                 return
 
     def update(self):
@@ -295,12 +302,13 @@ class VillageScene:
         self.dialogue.update()
         self.sys_msg.update()
 
-        for npc in self.npcs:
-            npc.update()
-
-        # Remover Zequinha se desapareceu
+        # Atualiza NPCs e remove Zequinha se desapareceu
         if self._zequinha_disappeared:
-            self.npcs = [n for n in self.npcs if n.npc_key != "zequinha"]
+            self._npc_slots = [s for s in self._npc_slots if s["key"] != "zequinha"]
+            self._zequinha_disappeared = False   # evita re-filtrar todo frame
+
+        for slot in self._npc_slots:
+            slot["npc"].update()
 
         self.particles.update()
         self.fx.update()
@@ -312,26 +320,35 @@ class VillageScene:
             self.player.y + Player.H // 2
         )
 
-        # Indicador de interação
+        # Indicador de interação com nome do NPC
         pr = self.player.rect
-        for npc in self.npcs:
+        for slot in self._npc_slots:
+            npc = slot["npc"]
             if abs(pr.centerx - npc.rect.centerx) < 40 and abs(pr.centery - npc.rect.centery) < 40:
-                self.hud.show_interaction("conversar")
+                self.hud.show_interaction(f"conversar com {slot['name']}")
                 break
 
         # Transição para próxima cena
-        if self.player.x > self.NEXT_SCENE_X:
+        if self.player.x > self.NEXT_SCENE_X and not self._transitioning:
             self._go_to_trail()
+
+        # Timer de transição — aqui no update, não no draw
+        if self._transitioning:
+            self._transition_timer -= 1
+            if self._transition_timer <= 0:
+                self._transitioning = False
+                from scenes.trail_scene import TrailScene
+                self.scene_manager.replace(
+                    TrailScene(self.scene_manager, self.bus, self.karma, self.input, self.player)
+                )
 
         # Impede sair pela esquerda
         if self.player.x < 0:
             self.player.x = 0
 
     def _go_to_trail(self):
-        from scenes.trail_scene import TrailScene
         self.fx.fade_out(frames=20)
-        # Usa timer simples para aguardar fade
-        self._transitioning = True
+        self._transitioning    = True
         self._transition_timer = 20
 
     def draw(self, surf):
@@ -353,8 +370,8 @@ class VillageScene:
         self.tilemap.draw(surf, cam_x, cam_y, SCREEN_W, SCREEN_H)
 
         # ── NPCs ──
-        for npc in self.npcs:
-            npc.draw(surf, cam_x, cam_y)
+        for slot in self._npc_slots:
+            slot["npc"].draw(surf, cam_x, cam_y)
 
         # ── Partículas ──
         self.particles.draw(surf, cam_x, cam_y)
@@ -383,10 +400,3 @@ class VillageScene:
             arr = self._arrow_font.render("→ Trilha da Pedra", True, GOLD)
             surf.blit(arr, (SCREEN_W - arr.get_width() - 8, SCREEN_H // 2))
 
-        # Transição de cena
-        if hasattr(self, '_transitioning') and self._transitioning:
-            self._transition_timer -= 1
-            if self._transition_timer <= 0:
-                self._transitioning = False
-                from scenes.trail_scene import TrailScene
-                self.scene_manager.replace(TrailScene(self.scene_manager, self.bus, self.karma, self.input, self.player))
