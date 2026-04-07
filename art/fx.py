@@ -79,6 +79,38 @@ class ParticleSystem:
             c = (220 + random.randint(-20, 0), 30, 30)
             self.particles.append(Particle(x, y, c, vx, vy, life=25, size=2))
 
+    def emit_boss_death(self, x, y):
+        """Explosão de partículas ao derrotar o boss — pedra e âmbar."""
+        # Fragmentos de pedra (cinza-roxo)
+        for _ in range(24):
+            angle = random.uniform(0, math.pi * 2)
+            speed = random.uniform(1.5, 5.0)
+            vx = math.cos(angle) * speed
+            vy = math.sin(angle) * speed - 2.0
+            shade = random.randint(80, 140)
+            c = (shade, shade - 20, shade + 20)
+            size = random.randint(2, 4)
+            life = random.randint(35, 70)
+            self.particles.append(Particle(x, y, c, vx, vy, life, size))
+        # Faíscas âmbar
+        for _ in range(16):
+            angle = random.uniform(0, math.pi * 2)
+            speed = random.uniform(2.0, 6.0)
+            vx = math.cos(angle) * speed
+            vy = math.sin(angle) * speed - 3.0
+            c = (200 + random.randint(-20, 20), 130 + random.randint(-30, 30), 30)
+            self.particles.append(Particle(x, y, c, vx, vy, life=random.randint(25, 50), size=2))
+
+    def emit_phase_burst(self, x, y):
+        """Pulso de energia ao entrar na fase 2 do boss."""
+        for _ in range(12):
+            angle = random.uniform(0, math.pi * 2)
+            speed = random.uniform(2.0, 4.5)
+            vx = math.cos(angle) * speed
+            vy = math.sin(angle) * speed - 1.0
+            c = (220, 80 + random.randint(-20, 40), 20)
+            self.particles.append(Particle(x, y, c, vx, vy, life=random.randint(20, 40), size=2))
+
     def update(self):
         self.particles = [p for p in self.particles if p.alive]
         for p in self.particles:
