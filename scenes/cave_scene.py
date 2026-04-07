@@ -133,6 +133,7 @@ class CaveScene:
         self.choice_box  = ChoiceBox()
         self.sys_msg     = SystemMessage()
         self.hud       = HUD(self.karma)
+        self.hud.set_scene_label("ATO 3 — CAVERNA")
         self.time      = 0
         self._paused   = False
         self._transitioning = False
@@ -199,6 +200,7 @@ class CaveScene:
             if enemy.alive and enemy.rect.colliderect(self.player.rect):
                 if self.player.take_damage(1):
                     self.fx.camera_shake(4, 12)
+                    self.hud.notify_damage()
 
         # Ataque contra morcegos
         if self.player.attack_active:
@@ -231,11 +233,13 @@ class CaveScene:
                 if self.player.take_damage(1):
                     self.guardian.knockback_player(self.player)
                     self.fx.camera_shake(3, 8)
+                    self.hud.notify_damage()
 
             # Ondas de choque fase 2
             if self.guardian.check_shockwave_hit(self.player.rect):
                 if self.player.take_damage(1):
                     self.fx.camera_shake(5, 15)
+                    self.hud.notify_damage()
 
             # Ataque do player contra guardião
             if self.player.attack_active:

@@ -233,6 +233,7 @@ class VillageScene:
         self.dialogue = DialogueBox()
         self.sys_msg  = SystemMessage()
         self.hud      = HUD(self.karma)
+        self.hud.set_scene_label("ATO 1 — VILA")
 
         # NPCs — estrutura única evita bug de desincronização de índices
         ground_y = 14 * TILE_SIZE - Player.H
