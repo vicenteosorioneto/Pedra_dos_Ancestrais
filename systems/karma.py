@@ -125,7 +125,8 @@ class KarmaSystem:
     def final_type(self) -> str:
         if self.ganancia >= 3:
             return "ruim"
-        if self.coragem >= 2 and self.sabedoria >= 2 and self.ganancia <= 1:
+        if (self.coragem >= 2 and self.sabedoria >= 2
+                and self.ganancia <= 1 and self.divida_iracema == True):
             return "verdadeiro"
         return "neutro"
 

@@ -174,6 +174,15 @@ class CaveScene:
     def handle_event(self, event):
         if not self._ready:
             return
+        if self.hud.death_active:
+            if event.type == pygame.KEYDOWN:
+                if event.key in (pygame.K_RETURN, pygame.K_SPACE) and self.hud.death_ready_for_input:
+                    self.hud.hide_death()
+                    self._setup()
+                elif event.key == pygame.K_ESCAPE and self.hud.death_ready_for_input:
+                    self.hud.hide_death()
+                    self._go_to_menu()
+            return
         if self.dialogue.active:
             if event.type == pygame.KEYDOWN and event.key in (pygame.K_x, pygame.K_k, pygame.K_RETURN, pygame.K_SPACE):
                 self.dialogue.advance()
@@ -185,9 +194,20 @@ class CaveScene:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 self._paused = not self._paused
+                self.hud.set_pause(self._paused)
+            if event.key == pygame.K_m and self._paused:
+                self._paused = False
+                self.hud.set_pause(False)
+                self._go_to_menu()
+            if event.key == pygame.K_RETURN and self._paused:
+                self._paused = False
+                self.hud.set_pause(False)
 
     def update(self):
         if not self._ready or self._paused:
+            return
+        if self.hud.death_active:
+            self.hud.update()
             return
 
         self.time += 1
@@ -213,12 +233,15 @@ class CaveScene:
 
         self.enemies = [e for e in self.enemies if e.alive]
 
-        # Guardião — inicia luta quando player se aproxima
-        if not self._guardian_fight_started and self.player.x > 400:
+        # Guardião — diálogo de intro antes de acordar
+        if not self._guardian_fight_started and self.player.x > 380:
             self._guardian_fight_started = True
-            self.sys_msg.show("Um guardião bloqueia o caminho!", 120)
+            self.dialogue.open("guardiao_intro", on_close=self._on_guardian_intro_close)
 
-        if self._guardian_fight_started and not self.guardian.defeated:
+        if not hasattr(self, '_guardian_intro_done'):
+            self._guardian_intro_done = False
+
+        if self._guardian_fight_started and not self.guardian.defeated and getattr(self, "_guardian_intro_done", False):
             self.guardian.update(self.tilemap, self.player.rect)
 
             # Transição para fase 2 — feedback visual imediato
@@ -289,8 +312,15 @@ class CaveScene:
                 self._transitioning = False
                 self._show_ending()
 
+        if self.player.dead and not self.hud.death_active:
+            self.hud.show_death()
+
         if self.player.x < 0:
             self.player.x = 0
+
+    def _on_guardian_intro_close(self):
+        self._guardian_intro_done = True
+        self.sys_msg.show("[Z] atacar — pule as ondas de choque!", 160)
 
     def _on_guardian_dialogue_close(self):
         self.sys_msg.show("O guardião se dissipou em luz...", 150)
@@ -348,7 +378,7 @@ class CaveScene:
             enemy.draw(surf, cam_x, cam_y)
 
         # Guardião
-        if self._guardian_fight_started and not self.guardian.defeated:
+        if self._guardian_fight_started and not self.guardian.defeated and getattr(self, "_guardian_intro_done", False):
             self.guardian.draw(surf, cam_x, cam_y)
         elif self.guardian.defeated:
             # Partículas residuais de luz nos primeiros 120 frames após derrota

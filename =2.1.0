@@ -1,0 +1,5 @@
+Collecting pygame
+  Using cached pygame-2.6.1-cp312-cp312-win_amd64.whl.metadata (13 kB)
+Using cached pygame-2.6.1-cp312-cp312-win_amd64.whl (10.6 MB)
+Installing collected packages: pygame
+Successfully installed pygame-2.6.1
