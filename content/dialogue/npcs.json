@@ -1,54 +1,112 @@
 {
-  "aldeao_1": [
+  "aldeao_0": [
     "Esse vento tá esquisito hoje...",
-    "parece que a Pedra tá chamando."
+    "parece que a Pedra tá chamando alguém."
   ],
-  "aldeao_2": [
+  "aldeao_1": [
     "Seu Zequinha foi lá pra cima ontem à noite.",
     "Eu vi com meus próprios olhos.",
-    "Nunca é boa ideia."
+    "Nunca é boa ideia ir à Pedra à noite."
+  ],
+  "aldeao_2": [
+    "Dizem que quem entra naquela pedra...",
+    "...nunca volta do mesmo jeito.",
+    "Seja lá o que isso quiser dizer."
   ],
   "comerciante": [
     "Três homens foram nessa pedra no século passado.",
-    "Nenhum voltou do mesmo jeito, menino."
+    "Nenhum voltou do mesmo jeito, menino.",
+    "Um voltou rico. Um voltou louco.",
+    "O terceiro... simplesmente não voltou."
   ],
   "zequinha": [
     "A pedra chama... mas só entra quem está destinado.",
-    "Se um dia você encontrar o símbolo,",
-    "saiba: o tesouro não alimenta o corpo.",
+    "Se um dia você encontrar o símbolo, saiba:",
+    "o tesouro não alimenta o corpo.",
     "Ele alimenta o que você mais deseja —",
-    "e cobra o preço mais alto."
+    "e cobra o preço mais alto.",
+    "Cuide das pessoas no caminho, menino.",
+    "A pedra vê tudo que você faz antes de chegar nela."
+  ],
+  "zequinha_sumiu": [
+    "...Zequinha. Você carregou isso por muito tempo.",
+    "Pode descansar agora."
+  ],
+  "guardiao_intro": [
+    "Uma estátua imensa bloqueia o caminho.",
+    "Seus olhos começam a brilhar...",
+    "[Z] para atacar. Pule para desviar das ondas!"
   ],
   "guardiao": [
     "Você... tem o sinal.",
     "Pode passar.",
     "Mas devia voltar."
   ],
-  "iracema": [
-    "Você não é o primeiro a procurar",
-    "alguém aqui dentro.",
-    "E não será o último a se perder."
-  ],
   "iracema_proposta": [
+    "Você não é o primeiro a procurar alguém aqui dentro.",
+    "E não será o último a se perder.",
     "Eu conheço o caminho até o coração da pedra.",
-    "Mas nada aqui é de graça.",
-    "Faço um trato com você:",
-    "eu abro o caminho...",
-    "e você carrega a memória deste lugar",
-    "para quem ainda está lá fora.",
-    "O que você decide?"
+    "Mas a pedra cobra uma dívida.",
+    "A dívida é simples:",
+    "o que você aprender aqui dentro,",
+    "você não esconde. Você carrega.",
+    "Carrega pra fora, pra vila, pra quem quiser ouvir.",
+    "Você aceita?"
   ],
   "iracema_aceita": [
     "Sabia que você viria.",
     "Sabia desde antes de você nascer.",
+    "Os que viveram aqui precisavam",
+    "que alguém lembrasse.",
     "Vá. O caminho está aberto.",
     "E não esqueça o que prometeu."
   ],
   "iracema_recusa": [
     "...",
     "Tudo bem.",
-    "Outros virão.",
-    "Sempre vêm.",
-    "Mas o caminho... você terá que achar sozinho."
+    "Outros virão. Sempre vêm.",
+    "Mas o caminho... você terá que achar sozinho.",
+    "E a memória que você não carregar —",
+    "ninguém vai carregar."
+  ],
+  "velho_da_pedra": [
+    "Ah... você veio subir a trilha.",
+    "Meus avós chamavam essa pedra de 'o arquivo'.",
+    "Lá dentro dormem as memórias de 37 gerações.",
+    "Mas a entrada só abre pra quem acender",
+    "os três altares dos pilares:",
+    "Coragem. Paciência. Memória.",
+    "Cada altar é uma prova.",
+    "Não tente forçar. A pedra enxerga a intenção."
+  ],
+  "altar_0": [
+    "Silhuetas gravando símbolos na pedra...",
+    "Os Tapuias do Alto preservavam tudo.",
+    "Cada símbolo, um nome. Cada nome, uma vida."
+  ],
+  "altar_1": [
+    "Uma família na seca. Tudo que resta",
+    "é o que se lembra.",
+    "A pedra guarda o que a terra esquece."
+  ],
+  "altar_2": [
+    "Pajés depositando cristais âmbar.",
+    "O coração da pedra sendo preenchido.",
+    "Trinta e sete gerações. Agora você é a trigésima oitava."
+  ],
+  "registro_0": [
+    "Símbolo dos Tapuias do Alto.",
+    "Círculo com cruz — vida e memória.",
+    "Gravado há mais de 400 anos."
+  ],
+  "registro_1": [
+    "37 gerações.",
+    "Cada entalhe, um nome que a pedra guardou.",
+    "Todos esperando que alguém voltasse a ouvir."
+  ],
+  "registro_2": [
+    "O rosto de Iracema, mais jovem.",
+    "Ela escolheu ficar.",
+    "Para que ninguém mais precisasse escolher."
   ]
 }

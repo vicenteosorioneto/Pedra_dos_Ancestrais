@@ -239,11 +239,13 @@ class VillageScene:
         ground_y = 14 * TILE_SIZE - Player.H
         self._npc_slots = [
             {"npc": VillagerNPC(120, ground_y, variant=0, patrol_range=40),
-             "key": "aldeao_1",    "name": "Aldeão",          "talked": False},
-            {"npc": VillagerNPC(340, ground_y, variant=1, patrol_range=0),
+             "key": "aldeao_0",    "name": "Aldeão",          "talked": False},
+            {"npc": VillagerNPC(420, ground_y, variant=1, patrol_range=0),
              "key": "aldeao_2",    "name": "Aldeão",          "talked": False},
             {"npc": ElderNPC(480, ground_y),
              "key": "zequinha",    "name": "Seu Zequinha",    "talked": False},
+            {"npc": VillagerNPC(580, ground_y, variant=2, patrol_range=0),
+             "key": "aldeao_2",    "name": "Aldeão",          "talked": False},
             {"npc": ComercianteNPC(680, ground_y),
              "key": "comerciante", "name": "Comerciante",     "talked": False},
         ]
@@ -260,6 +262,18 @@ class VillageScene:
     def handle_event(self, event):
         if not self._ready:
             return
+
+        # Tela de morte — só aceita ENTER e ESC
+        if self.hud.death_active:
+            if event.type == pygame.KEYDOWN:
+                if event.key in (pygame.K_RETURN, pygame.K_SPACE) and self.hud.death_ready_for_input:
+                    self.hud.hide_death()
+                    self._setup()
+                elif event.key == pygame.K_ESCAPE and self.hud.death_ready_for_input:
+                    self.hud.hide_death()
+                    self._go_to_menu()
+            return
+
         if self.dialogue.active:
             if event.type == pygame.KEYDOWN and event.key in (pygame.K_x, pygame.K_k, pygame.K_RETURN, pygame.K_SPACE):
                 self.dialogue.advance()
@@ -268,9 +282,18 @@ class VillageScene:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 self._paused = not self._paused
+                self.hud.set_pause(self._paused)
+            if event.key == pygame.K_m and self._paused:
+                self._paused = False
+                self.hud.set_pause(False)
+                self._go_to_menu()
+            if event.key in (pygame.K_RETURN,) and self._paused:
+                self._paused = False
+                self.hud.set_pause(False)
             # Interagir com NPC
-            if event.key in (pygame.K_x, pygame.K_k):
-                self._try_interact()
+            if not self._paused:
+                if event.key in (pygame.K_x, pygame.K_k):
+                    self._try_interact()
 
     def _try_interact(self):
         pr = self.player.rect
@@ -296,6 +319,9 @@ class VillageScene:
     def update(self):
         if not self._ready or self._paused:
             return
+        if self.hud.death_active:
+            self.hud.update()
+            return
 
         if not self.dialogue.active:
             self.player.update(self.input.poll(), self.tilemap, self.particles)
@@ -314,6 +340,10 @@ class VillageScene:
         self.particles.update()
         self.fx.update()
         self.hud.update()
+
+        # Morte do player
+        if self.player.dead and not self.hud.death_active:
+            self.hud.show_death()
 
         # Câmera segue player
         self.camera.update(
@@ -346,6 +376,12 @@ class VillageScene:
         # Impede sair pela esquerda
         if self.player.x < 0:
             self.player.x = 0
+
+    def _go_to_menu(self):
+        from scenes.intro_scene import IntroScene
+        from systems.karma import KarmaSystem
+        new_karma = KarmaSystem(self.bus)
+        self.scene_manager.replace(IntroScene(self.scene_manager, self.bus, new_karma, self.input))
 
     def _go_to_trail(self):
         self.fx.fade_out(frames=20)

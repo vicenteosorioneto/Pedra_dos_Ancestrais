@@ -228,13 +228,20 @@ class TrailScene:
         if self._prev_player:
             self.player.hp = max(1, self._prev_player.hp)
 
-        # Inimigos: 3 morcegos
+        # Inimigos: 5 morcegos (mais desafiador)
         bat_y = 10 * TILE_SIZE
         self.enemies = [
             BatEnemy(200, bat_y),
-            BatEnemy(350, bat_y - 20),
-            BatEnemy(500, bat_y + 15),
+            BatEnemy(320, bat_y - 15),
+            BatEnemy(420, bat_y + 10),
+            BatEnemy(520, bat_y - 20),
+            BatEnemy(640, bat_y, faster=True),
         ]
+
+        # NPC - Velho da Pedra (conta a história dos altares)
+        from entities.npc import ElderNPC
+        self._velho = ElderNPC(80, start_y)
+        self._velho_talked = False
 
         # Altares
         self.altars = [
@@ -272,8 +279,27 @@ class TrailScene:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 self._paused = not self._paused
+                self.hud.set_pause(self._paused)
+            if event.key == pygame.K_m and self._paused:
+                self._paused = False
+                self.hud.set_pause(False)
+                self._go_to_menu()
+            if event.key == pygame.K_RETURN and self._paused:
+                self._paused = False
+                self.hud.set_pause(False)
             if event.key in (pygame.K_x, pygame.K_k):
+                self._try_interact_npc()
                 self._try_interact_altar()
+
+    def _try_interact_npc(self):
+        pr = self.player.rect
+        if hasattr(self, '_velho') and not self._velho_talked:
+            npc = self._velho
+            if abs(pr.centerx - npc.rect.centerx) < 50 and abs(pr.centery - npc.rect.centery) < 50:
+                self._velho_talked = True
+                self.karma.conversou_com_npc()
+                self.dialogue.open("velho_da_pedra", avatar_surf=npc.get_avatar())
+                return
 
     def _try_interact_altar(self):
         pr = self.player.rect
@@ -283,9 +309,10 @@ class TrailScene:
                     altar.activate()
                     self._altars_activated += 1
                     self.karma.resolveu_puzzle_perfeito()
-                    # Burst de partículas no momento da ativação
                     self.particles.emit_phase_burst(int(altar.x) + 7, int(altar.y))
-                    self.sys_msg.show(f"Altar {self._altars_activated} de 3 ativado!", 90)
+                    altar_key = f"altar_{self._altars_activated - 1}"
+                    self.dialogue.open(altar_key)
+                    self.sys_msg.show(f"Altar {self._altars_activated} de 3 aceso!", 90)
                     if self._altars_activated >= 3:
                         self._open_portal()
                 return
@@ -314,6 +341,13 @@ class TrailScene:
             self.player.update(self.input.poll(), self.tilemap, self.particles)
 
         # Inimigos
+        if hasattr(self, '_velho'):
+            self._velho.update()
+            pr = self.player.rect
+            npc = self._velho
+            if abs(pr.centerx - npc.rect.centerx) < 50 and abs(pr.centery - npc.rect.centery) < 50 and not self._velho_talked:
+                self.hud.show_interaction("conversar")
+
         for enemy in self.enemies:
             enemy.update(self.tilemap, self.player.rect)
 
@@ -411,6 +445,10 @@ class TrailScene:
         # Altares
         for altar in self.altars:
             altar.draw(surf, cam_x, cam_y, self.time)
+
+        # NPC Velho
+        if hasattr(self, '_velho'):
+            self._velho.draw(surf, cam_x, cam_y)
 
         # Inimigos
         for enemy in self.enemies:
