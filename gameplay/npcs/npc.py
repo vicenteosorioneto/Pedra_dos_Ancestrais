@@ -99,3 +99,37 @@ class ComercianteNPC(NPC):
             sprite_fn=lambda direction: get_npc_villager(2, direction),
             patrol_range=0,
         )
+
+
+class CriancaNPC(NPC):
+    """Criança que desenha a Pedra obsessivamente — sprite menor."""
+    W = 9
+    H = 20
+
+    def __init__(self, x: float, y: float) -> None:
+        super().__init__(
+            x, y,
+            npc_key="crianca",
+            sprite_fn=lambda direction: get_npc_villager(0, direction),
+            patrol_range=0,
+        )
+
+    def draw(self, surf: pygame.Surface, cam_x: float, cam_y: float) -> None:
+        sprite = get_npc_villager(0, self.facing)
+        # Escala reduzida para parecer criança
+        small = pygame.transform.scale(sprite, (self.W + 3, self.H + 4))
+        surf.blit(small, (int(self.x - cam_x) - 1, int(self.y - cam_y) + 8))
+
+    def get_avatar(self) -> pygame.Surface:
+        return pygame.transform.scale(get_npc_villager(0, 1), (self.W + 3, self.H + 4))
+
+
+class MoradorMedoNPC(NPC):
+    """Morador assustado — fica parado, olhando para a Pedra."""
+    def __init__(self, x: float, y: float) -> None:
+        super().__init__(
+            x, y,
+            npc_key="morador_medo",
+            sprite_fn=lambda direction: get_npc_villager(1, direction),
+            patrol_range=0,
+        )

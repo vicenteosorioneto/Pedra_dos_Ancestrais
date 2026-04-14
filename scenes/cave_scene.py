@@ -17,7 +17,7 @@ from art.fx import ParticleSystem, ScreenEffects
 
 
 def _build_cave_map():
-    COLS = 60
+    COLS = 82
     ROWS = 22
     data = [[0] * COLS for _ in range(ROWS)]
 
@@ -30,15 +30,18 @@ def _build_cave_map():
         data[20][col] = 9
         data[21][col] = 9
 
-    # Plataformas de pedra de caverna
+    # Plataformas de pedra de caverna (câmara da memória + área do guardião)
     platforms = [
-        (range(4, 12),   14),
+        (range(4,  12),  14),
         (range(14, 20),  12),
         (range(22, 28),  15),
         (range(30, 36),  13),
         (range(38, 44),  11),
         (range(46, 52),  14),
         (range(54, 60),  12),
+        (range(62, 68),  15),   # área do guardião
+        (range(70, 76),  13),
+        (range(76, 82),  11),   # câmara final / Iracema
     ]
     for cols, row in platforms:
         for col in cols:
@@ -48,17 +51,65 @@ def _build_cave_map():
                     data[row+1][col] = 9
 
     # Cristais âmbar espalhados
-    crystals = [(6, 17), (15, 11), (25, 14), (33, 12), (42, 10), (50, 13), (57, 11)]
+    crystals = [
+        (6, 17), (15, 11), (25, 14), (33, 12),
+        (42, 10), (50, 13), (57, 11), (65, 12),
+        (73, 10), (79, 13),
+    ]
     for col, row in crystals:
         if 0 <= col < COLS and 0 <= row < ROWS:
             data[row][col] = 11  # crystal
 
-    # Pilares (paredes laterais dos grupos)
-    for col in [0, 1, 58, 59]:
+    # Pilares (paredes laterais)
+    for col in [0, 1, 80, 81]:
         for row in range(ROWS):
             data[row][col] = 9
 
-    return data, COLS, ROWS
+    # Posições dos registros na câmara da memória (cols 6-45)
+    registro_positions = [(8, 17), (22, 14), (38, 12)]
+
+    return data, COLS, ROWS, registro_positions
+
+
+class RegistroCaverna:
+    """Inscrição de pedra na câmara da memória — idêntica à da trilha."""
+    W = 12
+    H = 16
+
+    def __init__(self, x, y, key):
+        self.x    = float(x)
+        self.y    = float(y)
+        self.key  = key
+        self.read = False
+        self.time = 0
+
+    @property
+    def rect(self):
+        return pygame.Rect(int(self.x), int(self.y), self.W, self.H)
+
+    def update(self):
+        self.time += 1
+
+    def draw(self, surf, cam_x, cam_y):
+        from settings import PALETTE_CAVE as C
+        sx = int(self.x - cam_x)
+        sy = int(self.y - cam_y)
+        if not (-20 < sx < SCREEN_W + 20):
+            return
+        col     = (80, 120, 100) if not self.read else (50, 75, 60)
+        col_top = (60, 90,  75)  if not self.read else (40, 60, 48)
+        pygame.draw.rect(surf, col,     (sx,   sy + 4, self.W, self.H - 4))
+        pygame.draw.rect(surf, col_top, (sx+2, sy,     self.W - 4, 6))
+        glyph = (80, 200, 160) if not self.read else (40, 100, 80)
+        for row in range(3):
+            pygame.draw.line(surf, glyph,
+                             (sx + 2, sy + 7 + row * 3),
+                             (sx + self.W - 2, sy + 7 + row * 3))
+        if not self.read:
+            pulse = int(abs(math.sin(self.time * 0.07)) * 55) + 30
+            gsurf = pygame.Surface((22, 22), pygame.SRCALPHA)
+            pygame.draw.circle(gsurf, (80, 200, 160, pulse), (11, 11), 11)
+            surf.blit(gsurf, (sx - 5, sy - 5))
 
 
 def _draw_cave_bg(surf, cam_x):
@@ -98,7 +149,7 @@ def _draw_cave_details(surf, cam_x, cam_y, time):
 
 
 class CaveScene:
-    WORLD_COLS = 60
+    WORLD_COLS = 82
     WORLD_ROWS = 22
     WORLD_W    = WORLD_COLS * TILE_SIZE
     WORLD_H    = WORLD_ROWS * TILE_SIZE
@@ -113,6 +164,7 @@ class CaveScene:
         self._guardian_defeated = False
         self._ending_triggered  = False
         self._iracema_shown     = False
+        self._camara_hint_shown = False
 
     def on_enter(self):
         self._setup()
@@ -124,7 +176,7 @@ class CaveScene:
         pass
 
     def _setup(self):
-        map_data, cols, rows = _build_cave_map()
+        map_data, cols, rows, registro_positions = _build_cave_map()
         self.tilemap   = Tilemap(map_data)
         self.camera    = Camera(self.WORLD_W, self.WORLD_H)
         self.particles = ParticleSystem()
@@ -138,6 +190,7 @@ class CaveScene:
         self._paused   = False
         self._transitioning = False
         self._transition_timer = 0
+        self._camara_hint_shown = False
 
         # Player
         start_y = 17 * TILE_SIZE - Player.H
@@ -145,17 +198,26 @@ class CaveScene:
         if self._prev_player:
             self.player.hp = max(1, self._prev_player.hp)
 
-        # Inimigos: morcegos mais rápidos + guardião
+        # Inimigos: morcegos espalhados pela caverna maior
         bat_y = 8 * TILE_SIZE
         self.enemies = [
-            BatEnemy(180, bat_y, faster=True),
-            BatEnemy(300, bat_y - 10, faster=True),
-            BatEnemy(440, bat_y + 10, faster=True),
+            BatEnemy(160, bat_y, faster=True),
+            BatEnemy(280, bat_y - 10, faster=True),
+            BatEnemy(420, bat_y + 10, faster=True),
+            BatEnemy(580, bat_y - 15, faster=True),
+            BatEnemy(720, bat_y + 5, faster=True),
         ]
 
-        # Guardião estátua (mini-boss)
+        # Registros na câmara da memória
+        self.registros = [
+            RegistroCaverna(pos[0] * TILE_SIZE, pos[1] * TILE_SIZE - 16, f"camara_{i}")
+            for i, pos in enumerate(registro_positions)
+        ]
+        self._registros_read = 0
+
+        # Guardião estátua (mini-boss) — mais afastado na caverna expandida
         guardian_y = 17 * TILE_SIZE - 44
-        self.guardian = GuardianStatue(500, guardian_y)
+        self.guardian = GuardianStatue(660, guardian_y)
         self._guardian_fight_started = False
         self._guardian_death_time    = -1
 
@@ -202,6 +264,8 @@ class CaveScene:
             if event.key == pygame.K_RETURN and self._paused:
                 self._paused = False
                 self.hud.set_pause(False)
+            if event.key in (pygame.K_x, pygame.K_k) and not self._paused:
+                self._try_interact_registro()
 
     def update(self):
         if not self._ready or self._paused:
@@ -233,8 +297,13 @@ class CaveScene:
 
         self.enemies = [e for e in self.enemies if e.alive]
 
-        # Guardião — diálogo de intro antes de acordar
-        if not self._guardian_fight_started and self.player.x > 380:
+        # Hint da câmara da memória ao entrar na zona dos registros
+        if not self._camara_hint_shown and self.player.x > 80:
+            self._camara_hint_shown = True
+            self.sys_msg.show("Câmara da Memória — [X] para ler as inscrições", 200)
+
+        # Guardião — diálogo de intro antes de acordar (posição ajustada)
+        if not self._guardian_fight_started and self.player.x > 560:
             self._guardian_fight_started = True
             self.dialogue.open("guardiao_intro", on_close=self._on_guardian_intro_close)
 
@@ -285,9 +354,22 @@ class CaveScene:
                 self.dialogue.open("guardiao", on_close=self._on_guardian_dialogue_close)
 
         # Iracema encontro — só abre DEPOIS que o guardião foi derrotado
-        if not self._iracema_shown and self.guardian.defeated and self.player.x > 700:
+        if not self._iracema_shown and self.guardian.defeated and self.player.x > 900:
             self._iracema_shown = True
             self.dialogue.open("iracema_proposta", on_close=self._on_iracema_proposta_close)
+
+        # Registros da câmara da memória
+        for registro in self.registros:
+            registro.update()
+
+        # Indicador de interação com registros
+        if not self.dialogue.active and not self.choice_box.active:
+            pr = self.player.rect
+            for registro in self.registros:
+                if abs(pr.centerx - registro.rect.centerx) < 35 and abs(pr.centery - registro.rect.centery) < 45:
+                    if not registro.read:
+                        self.hud.show_interaction("ler inscrição")
+                    break
 
         self.dialogue.update()
         self.sys_msg.update()
@@ -317,6 +399,20 @@ class CaveScene:
 
         if self.player.x < 0:
             self.player.x = 0
+
+    def _try_interact_registro(self):
+        if self.dialogue.active or self.choice_box.active:
+            return
+        pr = self.player.rect
+        for registro in self.registros:
+            if abs(pr.centerx - registro.rect.centerx) < 35 and abs(pr.centery - registro.rect.centery) < 45:
+                if not registro.read:
+                    registro.read = True
+                    self._registros_read += 1
+                    self.karma.leu_registro()
+                    self.dialogue.open(registro.key)
+                    self.sys_msg.show("Câmara da Memória — inscrição lida.", 90)
+                return
 
     def _on_guardian_intro_close(self):
         self._guardian_intro_done = True
@@ -376,6 +472,10 @@ class CaveScene:
         # Inimigos
         for enemy in self.enemies:
             enemy.draw(surf, cam_x, cam_y)
+
+        # Registros da câmara da memória
+        for registro in self.registros:
+            registro.draw(surf, cam_x, cam_y)
 
         # Guardião
         if self._guardian_fight_started and not self.guardian.defeated and getattr(self, "_guardian_intro_done", False):

@@ -10,7 +10,7 @@ from systems.tilemap import Tilemap
 from systems.dialogue import DialogueBox, SystemMessage
 from systems.hud import HUD
 from entities.player import Player
-from entities.npc import VillagerNPC, ElderNPC, ComercianteNPC
+from entities.npc import VillagerNPC, ElderNPC, ComercianteNPC, CriancaNPC, MoradorMedoNPC
 from core.camera import Camera
 from art.fx import ParticleSystem, ScreenEffects
 
@@ -19,12 +19,12 @@ from art.fx import ParticleSystem, ScreenEffects
 
 def _build_village_map():
     """
-    60 colunas x 22 linhas
+    78 colunas x 22 linhas
     Tile IDs: 0=ar, 1=pedra_topo, 2=pedra_meio, 3=pedra_base,
               4=terra, 5=cacto_base, 6=cacto_topo, 7=trepadeira,
               8=pedra_castelo, 13=grama_seca, 14=pote, 15=caixote
     """
-    COLS = 60
+    COLS = 78
     ROWS = 22
     data = [[0] * COLS for _ in range(ROWS)]
 
@@ -52,27 +52,27 @@ def _build_village_map():
     platform(range(28, 34), 11)
     platform(range(42, 47),  9)
     platform(range(52, 57), 12)
+    platform(range(62, 67), 10)   # plataforma extra
+    platform(range(70, 75), 11)   # plataforma extra
 
     # Cactos (no chão, y=13)
-    for cx in [5, 15, 24, 37, 48]:
+    for cx in [5, 15, 24, 37, 48, 60, 72]:
         if cx < COLS:
             data[13][cx] = 6   # topo cacto
-            data[14][cx] = 5   # base cacto (substitui pedra_topo no topo)
-            # cacto sobrepõe o tile de chão
-            data[14][cx] = 5
+            data[14][cx] = 5   # base cacto
 
     # Potes
-    for px in [3, 20, 45]:
+    for px in [3, 20, 45, 65]:
         if px < COLS:
             data[13][px] = 14  # pote sobre o chão
 
     # Caixotes
-    for bx in [35, 50]:
+    for bx in [35, 50, 68]:
         if bx < COLS:
             data[13][bx] = 15
 
     # Trepadeiras pendendo de plataformas
-    vine_cols = [9, 10, 29, 30, 43, 53]
+    vine_cols = [9, 10, 29, 30, 43, 53, 63, 71]
     for vc in vine_cols:
         if vc < COLS:
             for vy in range(1, 4):
@@ -199,9 +199,9 @@ def _draw_hills(surf, cam_x):
 # ── Cena principal ────────────────────────────────────────────────────────────
 
 class VillageScene:
-    WORLD_COLS = 60
+    WORLD_COLS = 78
     WORLD_ROWS = 22
-    WORLD_W    = WORLD_COLS * TILE_SIZE  # 960
+    WORLD_W    = WORLD_COLS * TILE_SIZE  # 1248
     WORLD_H    = WORLD_ROWS * TILE_SIZE  # 352
 
     NEXT_SCENE_X = (WORLD_COLS - 2) * TILE_SIZE  # saída à direita
@@ -240,14 +240,18 @@ class VillageScene:
         self._npc_slots = [
             {"npc": VillagerNPC(120, ground_y, variant=0, patrol_range=40),
              "key": "aldeao_0",    "name": "Aldeão",          "talked": False},
+            {"npc": CriancaNPC(300, ground_y),
+             "key": "crianca",     "name": "Criança",         "talked": False},
             {"npc": VillagerNPC(420, ground_y, variant=1, patrol_range=0),
              "key": "aldeao_2",    "name": "Aldeão",          "talked": False},
-            {"npc": ElderNPC(480, ground_y),
+            {"npc": ElderNPC(500, ground_y),
              "key": "zequinha",    "name": "Seu Zequinha",    "talked": False},
-            {"npc": VillagerNPC(580, ground_y, variant=2, patrol_range=0),
+            {"npc": VillagerNPC(620, ground_y, variant=2, patrol_range=0),
              "key": "aldeao_2",    "name": "Aldeão",          "talked": False},
-            {"npc": ComercianteNPC(680, ground_y),
+            {"npc": ComercianteNPC(740, ground_y),
              "key": "comerciante", "name": "Comerciante",     "talked": False},
+            {"npc": MoradorMedoNPC(920, ground_y),
+             "key": "morador_medo","name": "Morador",         "talked": False},
         ]
         self._zequinha_disappeared = False
         self._transitioning        = False
@@ -300,6 +304,17 @@ class VillageScene:
         for slot in self._npc_slots:
             npc = slot["npc"]
             if abs(pr.centerx - npc.rect.centerx) < 40 and abs(pr.centery - npc.rect.centery) < 40:
+                # Criança tem dois diálogos: primeiro e segundo
+                if slot["key"] == "crianca":
+                    if not slot["talked"]:
+                        slot["talked"] = True
+                        self.karma.conversou_com_npc()
+                        self.dialogue.open("crianca", avatar_surf=npc.get_avatar())
+                    elif not slot.get("talked_2", False):
+                        slot["talked_2"] = True
+                        self.dialogue.open("crianca_2", avatar_surf=npc.get_avatar())
+                    return
+
                 if not slot["talked"]:
                     slot["talked"] = True
                     self.karma.conversou_com_npc()

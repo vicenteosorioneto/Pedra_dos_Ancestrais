@@ -1,112 +1,276 @@
 {
   "aldeao_0": [
     "Esse vento tá esquisito hoje...",
-    "parece que a Pedra tá chamando alguém."
+    "Não é o vento comum do sertão.",
+    "Parece que carrega alguma coisa junto.",
+    "Como uma voz que você quase entende,",
+    "mas some antes de virar palavra.",
+    "A Pedra tá chamando alguém. Tenha cuidado."
   ],
   "aldeao_1": [
     "Seu Zequinha foi lá pra cima ontem à noite.",
     "Eu vi com meus próprios olhos.",
-    "Nunca é boa ideia ir à Pedra à noite."
+    "Saiu sem lantena, sem nada.",
+    "Nunca é boa ideia ir à Pedra à noite.",
+    "Minha avó dizia: a Pedra vê no escuro.",
+    "E ela enxerga o que você esconde de dia."
   ],
   "aldeao_2": [
     "Dizem que quem entra naquela pedra...",
     "...nunca volta do mesmo jeito.",
-    "Seja lá o que isso quiser dizer."
+    "Seja lá o que isso quiser dizer.",
+    "Um cara da cidade tentou tirar fotos lá dentro.",
+    "Voltou com a câmera cheia de branco.",
+    "Só branco. Nenhuma foto deu certo.",
+    "A pedra não gosta de ser registrada.",
+    "Ela só deixa entrar quem ela escolhe."
   ],
   "comerciante": [
     "Três homens foram nessa pedra no século passado.",
     "Nenhum voltou do mesmo jeito, menino.",
     "Um voltou rico. Um voltou louco.",
-    "O terceiro... simplesmente não voltou."
+    "O terceiro... simplesmente não voltou.",
+    "Mas o que voltou rico — sabe o que ele disse?",
+    "Disse que o ouro tava lá. Tava de verdade.",
+    "Mas que ele não conseguia segurar.",
+    "Escorregava dos dedos como areia.",
+    "Passou o resto da vida tentando contar isso",
+    "e ninguém acreditou nele.",
+    "Eu acredito. Porque vi os olhos dele.",
+    "Eram olhos de quem viu algo que não devia ter visto."
   ],
   "zequinha": [
     "A pedra chama... mas só entra quem está destinado.",
+    "Não é questão de força ou de coragem.",
+    "É questão de intenção.",
+    "Eu fui uma vez. Tinha uns vinte anos.",
+    "Cheguei até o terceiro altar.",
+    "E parei. Não porque tive medo.",
+    "Parei porque entendi que ainda não era hora.",
+    "A pedra me deixou ir embora.",
+    "Não todo mundo tem essa sorte.",
     "Se um dia você encontrar o símbolo, saiba:",
     "o tesouro não alimenta o corpo.",
     "Ele alimenta o que você mais deseja —",
     "e cobra o preço mais alto.",
     "Cuide das pessoas no caminho, menino.",
-    "A pedra vê tudo que você faz antes de chegar nela."
+    "A pedra vê tudo que você faz antes de chegar nela.",
+    "Ela sabe quem você é antes de você saber."
   ],
   "zequinha_sumiu": [
     "...Zequinha. Você carregou isso por muito tempo.",
     "Pode descansar agora."
   ],
+  "crianca": [
+    "Eu desenho a Pedra todo dia.",
+    "Não consigo parar.",
+    "Às vezes acordo de madrugada",
+    "e já tô desenhando sem lembrar de ter começado.",
+    "Minha mãe acha que eu tô doente.",
+    "Mas eu acho que a Pedra tá tentando me contar uma coisa.",
+    "Só que eu ainda não entendo o que é."
+  ],
+  "crianca_2": [
+    "Você vai subir até lá?",
+    "Se você for, pode perguntar pra ela uma coisa por mim?",
+    "Pergunta o nome da mulher dos meus sonhos.",
+    "Ela tá sempre de costas.",
+    "Nunca vi o rosto dela.",
+    "Mas ela tá sempre do lado da Pedra.",
+    "Sempre esperando alguém chegar."
+  ],
+  "morador_medo": [
+    "Não vai não, menino.",
+    "Eu sei que você quer ir.",
+    "Todo mundo que vem aqui quer ir.",
+    "Mas você viu o vento hoje?",
+    "Esse vento só aparece quando a pedra",
+    "tá acordando de alguma coisa.",
+    "Meu pai dizia que ela dorme em ciclos.",
+    "E quando ela acorda, ela chama alguém.",
+    "Sempre um. Nunca mais de um.",
+    "Talvez seja você dessa vez.",
+    "Mas eu preferia que não fosse."
+  ],
   "guardiao_intro": [
     "Uma estátua imensa bloqueia o caminho.",
-    "Seus olhos começam a brilhar...",
-    "[Z] para atacar. Pule para desviar das ondas!"
+    "Seus olhos começam a brilhar com luz âmbar...",
+    "As rachaduras na pedra se iluminam.",
+    "Ela estava esperando. Ela sempre esteve esperando.",
+    "[Z] para atacar. Pule para desviar das ondas!",
+    "Na fase 2, ela libera ondas de choque pelo chão!"
   ],
   "guardiao": [
     "Você... tem o sinal.",
+    "Trinta e sete gerações escolheram alguém.",
+    "Você foi escolhido pela trigésima oitava.",
     "Pode passar.",
-    "Mas devia voltar."
+    "Mas carregue o que aprender.",
+    "Não guarde só pra você.",
+    "A pedra não gosta de guardiões solitários."
   ],
   "iracema_proposta": [
-    "Você não é o primeiro a procurar alguém aqui dentro.",
+    "Você chegou.",
+    "Demorou menos do que eu esperava.",
+    "Ou talvez mais. O tempo aqui dentro é diferente.",
+    "Eu sou Iracema.",
+    "Fui a última a entrar aqui por vontade própria.",
+    "Todos os outros foram trazidos.",
+    "Você não é o primeiro a procurar algo aqui dentro.",
     "E não será o último a se perder.",
     "Eu conheço o caminho até o coração da pedra.",
-    "Mas a pedra cobra uma dívida.",
+    "Mas a pedra cobra uma dívida de quem passa.",
     "A dívida é simples:",
     "o que você aprender aqui dentro,",
     "você não esconde. Você carrega.",
     "Carrega pra fora, pra vila, pra quem quiser ouvir.",
-    "Você aceita?"
+    "As memórias de 37 gerações não podem morrer aqui.",
+    "Você aceita essa responsabilidade?"
   ],
   "iracema_aceita": [
     "Sabia que você viria.",
     "Sabia desde antes de você nascer.",
+    "Antes da sua mãe nascer.",
     "Os que viveram aqui precisavam",
-    "que alguém lembrasse.",
+    "que alguém lembrasse deles.",
+    "Não como herói. Não como lenda.",
+    "Como pessoas. Como famílias.",
+    "Como histórias que merecem ser contadas.",
     "Vá. O caminho está aberto.",
-    "E não esqueça o que prometeu."
+    "E não esqueça o que prometeu.",
+    "A pedra vai lembrar. Mesmo que você esqueça."
   ],
   "iracema_recusa": [
     "...",
     "Tudo bem.",
+    "Não é a primeira vez que alguém recusa.",
     "Outros virão. Sempre vêm.",
     "Mas o caminho... você terá que achar sozinho.",
     "E a memória que você não carregar —",
-    "ninguém vai carregar."
+    "ninguém vai carregar.",
+    "Pode ser que você mude de ideia lá fora.",
+    "Se mudar, a pedra vai saber.",
+    "Ela sempre sabe."
   ],
   "velho_da_pedra": [
     "Ah... você veio subir a trilha.",
+    "Olhei pra seus olhos e já sei o que você vai encontrar.",
     "Meus avós chamavam essa pedra de 'o arquivo'.",
     "Lá dentro dormem as memórias de 37 gerações.",
+    "Tapuias do Alto. Sertanejos. Retirantes.",
+    "Gente que viveu e morreu e não queria ser esquecida.",
+    "A pedra guarda o que a terra esquece.",
     "Mas a entrada só abre pra quem acender",
-    "os três altares dos pilares:",
-    "Coragem. Paciência. Memória.",
-    "Cada altar é uma prova.",
-    "Não tente forçar. A pedra enxerga a intenção."
+    "os cinco altares dos pilares:",
+    "Coragem. Paciência. Memória. Fé. Propósito.",
+    "Cada altar é uma prova. Não de força.",
+    "Uma prova de intenção.",
+    "Não tente forçar. A pedra enxerga a intenção.",
+    "E preste atenção nas inscrições pelo caminho.",
+    "Elas não são decoração. São mensagens.",
+    "De gente que passou por aqui antes de você."
   ],
   "altar_0": [
-    "Silhuetas gravando símbolos na pedra...",
+    "Silhuetas gravando símbolos na pedra ao amanhecer...",
     "Os Tapuias do Alto preservavam tudo.",
-    "Cada símbolo, um nome. Cada nome, uma vida."
+    "Cada símbolo, um nome. Cada nome, uma vida.",
+    "Eles sabiam que o tempo apaga,",
+    "mas que a pedra guarda.",
+    "Esse altar foi aceso pela primeira vez há 400 anos."
   ],
   "altar_1": [
     "Uma família na seca. Tudo que resta",
     "é o que se lembra.",
-    "A pedra guarda o que a terra esquece."
+    "A pedra guarda o que a terra esquece.",
+    "Você vê uma criança desenhando na rocha.",
+    "Um adulto lendo o que foi gravado antes.",
+    "A memória passando de mão em mão como água."
   ],
   "altar_2": [
     "Pajés depositando cristais âmbar.",
     "O coração da pedra sendo preenchido.",
-    "Trinta e sete gerações. Agora você é a trigésima oitava."
+    "Trinta e sete gerações. Agora você é a trigésima oitava.",
+    "Você sente o peso disso?",
+    "Não é fardo. É herança.",
+    "Carregue com cuidado."
+  ],
+  "altar_3": [
+    "Uma procissão sobe a trilha à noite.",
+    "Tochas. Silêncio. Propósito.",
+    "Eles não vinham buscar riqueza.",
+    "Vinham trazer o que não podia ser perdido:",
+    "nomes, datas, histórias.",
+    "O que não é gravado, desaparece.",
+    "O que é gravado, vive."
+  ],
+  "altar_4": [
+    "O último guardião acende o fogo.",
+    "Ele sabe que não vai descer.",
+    "Escolheu ficar para que os outros pudessem ir.",
+    "A pedra reconhece o sacrifício.",
+    "Não precisa ser de sangue.",
+    "Às vezes é só o tempo.",
+    "Às vezes é só a escolha de lembrar."
   ],
   "registro_0": [
     "Símbolo dos Tapuias do Alto.",
     "Círculo com cruz — vida e memória.",
-    "Gravado há mais de 400 anos."
+    "Gravado há mais de 400 anos.",
+    "A pedra ainda preserva cada traço.",
+    "Como se tivesse sido feito ontem."
   ],
   "registro_1": [
     "37 gerações.",
     "Cada entalhe, um nome que a pedra guardou.",
-    "Todos esperando que alguém voltasse a ouvir."
+    "Todos esperando que alguém voltasse a ouvir.",
+    "Você ouve agora.",
+    "Isso é suficiente."
   ],
   "registro_2": [
     "O rosto de Iracema, mais jovem.",
     "Ela escolheu ficar.",
-    "Para que ninguém mais precisasse escolher."
+    "Para que ninguém mais precisasse escolher.",
+    "O preço da memória é sempre pago por alguém.",
+    "Ela pagou por todos."
+  ],
+  "registro_3": [
+    "Uma lista de nomes gravados em espiral.",
+    "Começa do centro e vai para fora.",
+    "Cem nomes. Duzentos. Mais.",
+    "Cada um com uma data e um lugar.",
+    "Cada um uma vida inteira",
+    "resumida em dois traços e um círculo."
+  ],
+  "registro_4": [
+    "Mapa da região gravado há três séculos.",
+    "Rio Parnaíba ao sul. Serra ao norte.",
+    "A Pedra no centro de tudo.",
+    "Não como fronteira.",
+    "Como ponto de encontro.",
+    "Como coração da memória de um povo."
+  ],
+  "camara_0": [
+    "Paredes cobertas de gravuras luminosas.",
+    "Cada símbolo pulsa suavemente,",
+    "como se respirasse.",
+    "Você entrou na Câmara da Memória.",
+    "Aqui dentro, o tempo não corre igual.",
+    "Leia tudo que conseguir.",
+    "Cada inscrição é uma vida.",
+    "Cada vida merece um momento de atenção."
+  ],
+  "camara_1": [
+    "Uma voz baixa ecoa pelas paredes.",
+    "Não é ameaça. É reconhecimento.",
+    "A pedra sabe que você leu.",
+    "Ela sabe quem ouve e quem passa sem olhar.",
+    "Continue. O guardião aguarda no fim."
+  ],
+  "camara_2": [
+    "Cristais âmbar no teto refletem sua imagem.",
+    "Você se vê de várias formas ao mesmo tempo.",
+    "Como era. Como é. Como pode vir a ser.",
+    "A Pedra não julga. Ela só mostra.",
+    "O julgamento é seu."
   ]
 }

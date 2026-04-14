@@ -37,7 +37,7 @@ source .venv/bin/activate
 **3. Instale as dependências**
 
 ```bash
-pip install pygame>=2.1.0
+python -m pip install -r requirements.txt
 ```
 
 **4. Rode o jogo**
@@ -64,11 +64,13 @@ Todos os 55 testes devem passar. Nenhum deles abre janela ou depende do Pygame i
 # Versão resumida para quem já tem Python e Git
 git clone https://github.com/vicenteosorioneto/pedra_dos_ancestrais.git
 cd pedra_dos_ancestrais
-pip install pygame>=2.1.0
+python -m pip install -r requirements.txt
 python main.py
 ```
 
 **Requisitos:** Python 3.9+ · Pygame 2.1+
+
+No PowerShell, evite `pip install pygame>=2.1.0` sem aspas: o `>` pode ser interpretado como redirecionamento e criar um arquivo como `=2.1.0`. Se quiser instalar diretamente sem `requirements.txt`, use `python -m pip install "pygame>=2.1.0"`.
 
 ---
 

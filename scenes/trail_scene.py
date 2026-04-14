@@ -16,7 +16,7 @@ from art.fx import ParticleSystem, ScreenEffects, draw_stars
 
 
 def _build_trail_map():
-    COLS = 70
+    COLS = 92
     ROWS = 22
     data = [[0] * COLS for _ in range(ROWS)]
 
@@ -27,7 +27,7 @@ def _build_trail_map():
         data[20][col] = 3
         data[21][col] = 3
 
-    # Degraus subindo da esquerda para direita
+    # Degraus subindo da esquerda para direita (trilha mais longa)
     steps = [
         (0,  18, range(0, 10)),
         (1,  17, range(8, 18)),
@@ -36,7 +36,9 @@ def _build_trail_map():
         (2,  16, range(32, 42)),
         (4,  14, range(40, 50)),
         (3,  15, range(48, 58)),
-        (5,  13, range(56, 68)),
+        (5,  13, range(56, 66)),
+        (4,  14, range(64, 74)),
+        (6,  12, range(72, 84)),
     ]
     for dy, row, cols in steps:
         for col in cols:
@@ -52,22 +54,27 @@ def _build_trail_map():
         (range(35, 41), 12),
         (range(46, 52), 10),
         (range(58, 64), 9),
+        (range(68, 74), 8),
+        (range(78, 84), 7),
     ]
     for cols, row in platforms:
         for col in cols:
             if 0 <= col < COLS:
                 data[row][col] = 8
 
-    # Altares (3 posições — sobre plataformas existentes)
-    altar_positions = [(20, 17), (38, 15), (55, 13)]
+    # 5 altares espalhados pela trilha
+    altar_positions = [(15, 17), (30, 16), (47, 14), (63, 13), (79, 12)]
 
-    # Parede de bloqueio no fim da trilha (cols 64-66, toda a altura)
-    WALL_COLS = range(64, 67)
+    # 3 inscrições de pedra (registros) ao longo da trilha
+    registro_positions = [(22, 17), (52, 14), (71, 12)]
+
+    # Parede de bloqueio no fim da trilha (toda a altura)
+    WALL_COLS = range(86, 90)
     for col in WALL_COLS:
         for row in range(0, ROWS):
             data[row][col] = 8   # pedra_castelo — sólido
 
-    return data, COLS, ROWS, altar_positions, list(WALL_COLS)
+    return data, COLS, ROWS, altar_positions, registro_positions, list(WALL_COLS)
 
 
 def _draw_night_sky(surf, cam_x):
@@ -182,8 +189,51 @@ class Altar:
                                int(6 * pscale), 1)
 
 
+class Registro:
+    """Inscrição de pedra — leitura concede sabedoria (karma.leu_registro)."""
+    W = 12
+    H = 16
+
+    def __init__(self, x, y, key):
+        self.x    = float(x)
+        self.y    = float(y)
+        self.key  = key
+        self.read = False
+        self.time = 0
+
+    @property
+    def rect(self):
+        return pygame.Rect(int(self.x), int(self.y), self.W, self.H)
+
+    def update(self):
+        self.time += 1
+
+    def draw(self, surf, cam_x, cam_y):
+        sx = int(self.x - cam_x)
+        sy = int(self.y - cam_y)
+        if not (-20 < sx < SCREEN_W + 20):
+            return
+        col     = (120, 100, 70) if not self.read else (70, 55, 38)
+        col_top = (90, 70, 45)   if not self.read else (55, 40, 25)
+        # Base da placa
+        pygame.draw.rect(surf, col,     (sx,   sy + 4, self.W, self.H - 4))
+        pygame.draw.rect(surf, col_top, (sx+2, sy,     self.W - 4, 6))
+        # Linhas gravadas (texto antigo)
+        glyph = (200, 170, 80) if not self.read else (100, 85, 40)
+        for row in range(3):
+            pygame.draw.line(surf, glyph,
+                             (sx + 2, sy + 7 + row * 3),
+                             (sx + self.W - 2, sy + 7 + row * 3))
+        # Brilho pulsante se não lido
+        if not self.read:
+            pulse = int(abs(math.sin(self.time * 0.07)) * 55) + 30
+            gsurf = pygame.Surface((22, 22), pygame.SRCALPHA)
+            pygame.draw.circle(gsurf, (220, 180, 40, pulse), (11, 11), 11)
+            surf.blit(gsurf, (sx - 5, sy - 5))
+
+
 class TrailScene:
-    WORLD_COLS = 70
+    WORLD_COLS = 92
     WORLD_ROWS = 22
     WORLD_W    = WORLD_COLS * TILE_SIZE
     WORLD_H    = WORLD_ROWS * TILE_SIZE
@@ -207,7 +257,7 @@ class TrailScene:
         pass
 
     def _setup(self):
-        map_data, cols, rows, altar_positions, wall_cols = _build_trail_map()
+        map_data, cols, rows, altar_positions, registro_positions, wall_cols = _build_trail_map()
         self.tilemap   = Tilemap(map_data)
         self.camera    = Camera(self.WORLD_W, self.WORLD_H)
         self.particles = ParticleSystem()
@@ -216,7 +266,7 @@ class TrailScene:
         self.sys_msg   = SystemMessage()
         self.hud       = HUD(self.karma)
         self.hud.set_scene_label("ATO 2 — TRILHA")
-        self.hud.set_altar_progress(0)
+        self.hud.set_altar_progress(0, total=5)
         self.time      = 0
         self._paused   = False
         self._transitioning = False
@@ -228,14 +278,17 @@ class TrailScene:
         if self._prev_player:
             self.player.hp = max(1, self._prev_player.hp)
 
-        # Inimigos: 5 morcegos (mais desafiador)
+        # Inimigos: 8 morcegos espalhados pela trilha mais longa
         bat_y = 10 * TILE_SIZE
         self.enemies = [
             BatEnemy(200, bat_y),
             BatEnemy(320, bat_y - 15),
-            BatEnemy(420, bat_y + 10),
-            BatEnemy(520, bat_y - 20),
-            BatEnemy(640, bat_y, faster=True),
+            BatEnemy(450, bat_y + 10),
+            BatEnemy(560, bat_y - 20),
+            BatEnemy(680, bat_y, faster=True),
+            BatEnemy(780, bat_y - 10),
+            BatEnemy(900, bat_y + 5, faster=True),
+            BatEnemy(1050, bat_y - 15, faster=True),
         ]
 
         # NPC - Velho da Pedra (conta a história dos altares)
@@ -243,15 +296,21 @@ class TrailScene:
         self._velho = ElderNPC(80, start_y)
         self._velho_talked = False
 
-        # Altares
+        # 5 altares pela trilha
         self.altars = [
             Altar(pos[0] * TILE_SIZE, pos[1] * TILE_SIZE - 16)
             for pos in altar_positions
         ]
         self._altars_activated = 0
         self._portal_open      = False
-        self._wall_cols        = wall_cols          # cols a limpar ao abrir portal
-        self._wall_hint_shown  = False              # mostra hint só uma vez
+        self._wall_cols        = wall_cols
+        self._wall_hint_shown  = False
+
+        # 3 inscrições de pedra (registros)
+        self.registros = [
+            Registro(pos[0] * TILE_SIZE, pos[1] * TILE_SIZE - 16, f"registro_{i}")
+            for i, pos in enumerate(registro_positions)
+        ]
 
         # Tochas
         self.torches = [
@@ -290,6 +349,7 @@ class TrailScene:
             if event.key in (pygame.K_x, pygame.K_k):
                 self._try_interact_npc()
                 self._try_interact_altar()
+                self._try_interact_registro()
 
     def _try_interact_npc(self):
         pr = self.player.rect
@@ -312,9 +372,20 @@ class TrailScene:
                     self.particles.emit_phase_burst(int(altar.x) + 7, int(altar.y))
                     altar_key = f"altar_{self._altars_activated - 1}"
                     self.dialogue.open(altar_key)
-                    self.sys_msg.show(f"Altar {self._altars_activated} de 3 aceso!", 90)
-                    if self._altars_activated >= 3:
+                    self.sys_msg.show(f"Altar {self._altars_activated} de 5 aceso!", 90)
+                    if self._altars_activated >= 5:
                         self._open_portal()
+                return
+
+    def _try_interact_registro(self):
+        pr = self.player.rect
+        for registro in self.registros:
+            if abs(pr.centerx - registro.rect.centerx) < 35 and abs(pr.centery - registro.rect.centery) < 45:
+                if not registro.read:
+                    registro.read = True
+                    self.karma.leu_registro()
+                    self.dialogue.open(registro.key)
+                    self.sys_msg.show("Inscrição antiga lida.", 80)
                 return
 
     def _open_portal(self):
@@ -373,11 +444,15 @@ class TrailScene:
         for altar in self.altars:
             altar.update(self.particles)
 
+        # Registros
+        for registro in self.registros:
+            registro.update()
+
         self.dialogue.update()
         self.sys_msg.update()
         self.particles.update()
         self.fx.update()
-        self.hud.set_altar_progress(self._altars_activated)
+        self.hud.set_altar_progress(self._altars_activated, total=5)
         self.hud.update()
 
         self.camera.update(
@@ -387,11 +462,21 @@ class TrailScene:
 
         # Indicador altar — mostra número do altar
         pr = self.player.rect
+        interaction_shown = False
         for i, altar in enumerate(self.altars):
             if abs(pr.centerx - altar.rect.centerx) < 30 and abs(pr.centery - altar.rect.centery) < 40:
                 if not altar.activated:
                     self.hud.show_interaction(f"ativar altar {i + 1}")
+                    interaction_shown = True
                 break
+
+        # Indicador registro
+        if not interaction_shown:
+            for registro in self.registros:
+                if abs(pr.centerx - registro.rect.centerx) < 35 and abs(pr.centery - registro.rect.centery) < 45:
+                    if not registro.read:
+                        self.hud.show_interaction("ler inscrição")
+                    break
 
         # Hint quando player toca a parede sem ter os altares todos
         wall_x = self._wall_cols[0] * TILE_SIZE
@@ -399,7 +484,7 @@ class TrailScene:
                 and not self._wall_hint_shown
                 and self.player.x > wall_x - 40):
             self._wall_hint_shown = True
-            self.sys_msg.show("Ative os 3 altares para abrir o caminho.", 180)
+            self.sys_msg.show("Ative os 5 altares para abrir o caminho.", 180)
 
         # Transição para caverna
         if self._portal_open and self.player.x > self.NEXT_SCENE_X - 50:
@@ -445,6 +530,10 @@ class TrailScene:
         # Altares
         for altar in self.altars:
             altar.draw(surf, cam_x, cam_y, self.time)
+
+        # Registros
+        for registro in self.registros:
+            registro.draw(surf, cam_x, cam_y)
 
         # NPC Velho
         if hasattr(self, '_velho'):
