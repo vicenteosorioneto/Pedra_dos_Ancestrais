@@ -42,9 +42,17 @@ _NPC_NAMES: dict[str, str] = {
     "registro_2":       "[Inscrição]",
     "registro_3":       "[Inscrição]",
     "registro_4":       "[Inscrição]",
-    "camara_0":         "[A Pedra]",
-    "camara_1":         "[A Pedra]",
-    "camara_2":         "[A Pedra]",
+    "camara_0":              "[A Pedra]",
+    "camara_1":              "[A Pedra]",
+    "camara_2":              "[A Pedra]",
+    # Floresta
+    "peregrino_floresta":    "Peregrino",
+    "registro_floresta_0":   "[Inscrição]",
+    "registro_floresta_1":   "[Inscrição]",
+    # Ruínas
+    "altar_ruinas":          "[Visão]",
+    "registro_ruinas_0":     "[Inscrição]",
+    "registro_ruinas_1":     "[Inscrição]",
 }
 
 

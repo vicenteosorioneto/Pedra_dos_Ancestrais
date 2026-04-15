@@ -272,5 +272,64 @@
     "Como era. Como é. Como pode vir a ser.",
     "A Pedra não julga. Ela só mostra.",
     "O julgamento é seu."
+  ],
+
+  "peregrino_floresta": [
+    "Você também está indo para a Pedra?",
+    "Faz três dias que caminho por essa floresta.",
+    "Dizem que o caminho certo passa pelas ruínas.",
+    "Eu tentei entrar pela trilha direta. Não consegui.",
+    "A floresta me empurrou de volta. Sempre.",
+    "Como se dissesse: 'não é por aqui'.",
+    "As ruínas à frente têm um altar antigo.",
+    "Muito mais velho que os altares da trilha.",
+    "Acende ele antes de subir. A Pedra respeita quem respeita o caminho.",
+    "Boa sorte. E cuidado com os morcegos no teto das árvores."
+  ],
+
+  "registro_floresta_0": [
+    "Entalhes de pegadas na pedra.",
+    "Dezenas de pares. Todos indo na mesma direção.",
+    "Nenhum voltando.",
+    "Não porque morreram.",
+    "Porque encontraram o que vieram buscar",
+    "e escolheram continuar subindo."
+  ],
+
+  "registro_floresta_1": [
+    "Símbolo de proteção Tapuia.",
+    "Desenhado nas entradas de caminhos sagrados.",
+    "Significa: 'este caminho foi aberto por alguém'.",
+    "'Respeite o trabalho de quem veio antes'.",
+    "Alguém passou aqui. Alguém deixou isso pra você."
+  ],
+
+  "altar_ruinas": [
+    "Uma memória antiga. Um homem velho acendendo este altar.",
+    "Seus filhos assistem. Seus netos assistem.",
+    "Ele diz: 'a Pedra não é um tesouro'.",
+    "'É uma responsabilidade'.",
+    "'Quem acende o fogo carrega o fogo'.",
+    "'Não deixe apagar'.",
+    "O altar pulsa. O primeiro selo está ativo.",
+    "Quatro restam na trilha à frente."
+  ],
+
+  "registro_ruinas_0": [
+    "Mapa parcial. Muito antigo.",
+    "Cinco pontos marcados em espiral.",
+    "O primeiro aqui. Os outros quatro na trilha acima.",
+    "No centro da espiral: o símbolo da Pedra.",
+    "Cada ponto é um altar. Cada altar é um guardião.",
+    "Você acabou de despertar o primeiro."
+  ],
+
+  "registro_ruinas_1": [
+    "Nome gravado em espiral: Iracema.",
+    "Abaixo: 'ela escolheu ficar para que os outros pudessem ir'.",
+    "Abaixo: 'não chore por ela'.",
+    "'Ela está exatamente onde quis estar'.",
+    "Você vai conhecê-la lá dentro.",
+    "Quando conhecer, lembre deste nome gravado aqui."
   ]
 }
