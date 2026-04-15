@@ -66,6 +66,7 @@ class HUD:
         # Morte premium
         self._death_timer = -1
         self._death_alpha = 0
+        self._showing_controls = False
 
         # Pausa premium
         self._paused   = False
@@ -122,6 +123,13 @@ class HUD:
     def hide_death(self):
         self._death_timer = -1
         self._death_alpha = 0
+        self._showing_controls = False
+
+    def show_controls(self):
+        self._showing_controls = True
+
+    def hide_controls(self):
+        self._showing_controls = False
 
     @property
     def death_active(self):
@@ -262,6 +270,10 @@ class HUD:
 
         if t < 40: return
 
+        if self._showing_controls:
+            self._draw_controls_panel(surf)
+            return
+
         text_alpha = min(255, (t - 40) * 8)
         col_main = (min(255, int(200*text_alpha/255)),
                     min(255, int(40*text_alpha/255)),
@@ -271,18 +283,64 @@ class HUD:
                     min(255, int(100*text_alpha/255)))
 
         t1 = self._big_font.render("Caio caiu.", True, col_main)
-        surf.blit(t1, ((SCREEN_W-t1.get_width())//2, SCREEN_H//2-28))
+        surf.blit(t1, ((SCREEN_W-t1.get_width())//2, SCREEN_H//2-40))
 
         if t > 70:
             t2 = self._font.render("Mas a pedra espera.", True, col_sub)
-            surf.blit(t2, ((SCREEN_W-t2.get_width())//2, SCREEN_H//2+4))
+            surf.blit(t2, ((SCREEN_W-t2.get_width())//2, SCREEN_H//2-10))
 
         if t > 110:
             pulse = int(abs(math.sin(self._tick * 0.12)) * 40) + 160
             col_btn = (pulse, int(pulse*0.82), 0)
-            t3 = self._small_font.render(
-                "[ENTER] Tentar de novo     [ESC] Menu", True, col_btn)
-            surf.blit(t3, ((SCREEN_W-t3.get_width())//2, SCREEN_H//2+28))
+            # Três botões em linhas separadas
+            options = [
+                "[ENTER]  Tentar de novo",
+                "[ESC]    Sair ao Menu",
+                "[C]      Ver Controles",
+            ]
+            for i, opt in enumerate(options):
+                ts = self._small_font.render(opt, True, col_btn)
+                surf.blit(ts, ((SCREEN_W-ts.get_width())//2, SCREEN_H//2+18+i*18))
+
+    def _draw_controls_panel(self, surf):
+        """Painel de controles exibido dentro da tela de morte."""
+        pw, ph = 300, 190
+        px = (SCREEN_W - pw) // 2
+        py = (SCREEN_H - ph) // 2
+
+        panel = pygame.Surface((pw, ph), pygame.SRCALPHA)
+        panel.fill((8, 4, 18, 245))
+        surf.blit(panel, (px, py))
+        pygame.draw.rect(surf, (50, 40, 25), (px, py, pw, ph), 1)
+        pygame.draw.rect(surf, GOLD,         (px+2, py+2, pw-4, ph-4), 1)
+
+        self._init_fonts()
+        title = self._big_font.render("CONTROLES", True, GOLD)
+        surf.blit(title, ((SCREEN_W - title.get_width()) // 2, py + 10))
+
+        pygame.draw.line(surf, (60, 48, 24), (px+16, py+32), (px+pw-16, py+32), 1)
+
+        controles = [
+            ("← →",          "Mover"),
+            ("↑  /  W  /  Z", "Pular"),
+            ("Z  /  K",       "Atacar"),
+            ("X  /  J",       "Interagir"),
+            ("ESC",           "Pausar / Menu"),
+            ("ENTER",         "Confirmar / Avançar"),
+        ]
+        fs = self._small_font
+        col_key = (220, 200, 120)
+        col_val = (170, 155, 115)
+        for i, (key, action) in enumerate(controles):
+            k_surf = fs.render(key, True, col_key)
+            a_surf = fs.render(action, True, col_val)
+            y = py + 42 + i * 20
+            surf.blit(k_surf, (px + 20, y))
+            surf.blit(a_surf, (px + 160, y))
+
+        pygame.draw.line(surf, (60, 48, 24), (px+16, py+ph-24), (px+pw-16, py+ph-24), 1)
+        back = fs.render("[C] ou [ESC]  Voltar", True, (140, 120, 80))
+        surf.blit(back, ((SCREEN_W - back.get_width()) // 2, py + ph - 18))
 
     def _draw_pause(self, surf):
         W, H = SCREEN_W, SCREEN_H

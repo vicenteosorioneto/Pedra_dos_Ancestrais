@@ -31,13 +31,14 @@ class NPC:
         self.pause_timer = 0
         self.anim_frame  = 0
         self.anim_timer  = 0
+        self.frozen    = False  # True durante diálogo — pausa patrulha
 
     @property
     def rect(self) -> pygame.Rect:
         return pygame.Rect(int(self.x), int(self.y), self.W, self.H)
 
     def update(self) -> None:
-        if self.patrol_range <= 0:
+        if self.frozen or self.patrol_range <= 0:
             return
         if self.pause_timer > 0:
             self.pause_timer -= 1
