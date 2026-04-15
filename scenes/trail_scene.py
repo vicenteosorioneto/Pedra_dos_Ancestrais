@@ -103,7 +103,7 @@ def _draw_pedra_bg_trail(surf, cam_x):
     """Pedra do Castelo maior e mais próxima."""
     from scenes.village_scene import _draw_pedra_bg_art
     offset = int(cam_x * 0.15)
-    cx = SCREEN_W - 100 - offset % (SCREEN_W + 300)
+    cx = SCREEN_W // 2 - offset % (SCREEN_W + 300)
     cy = SCREEN_H - 100
     _draw_pedra_bg_art(surf, cx, cy, scale=1.2)
 
@@ -331,6 +331,22 @@ class TrailScene:
     def handle_event(self, event):
         if not self._ready:
             return
+        # Tela de morte — aceita ENTER, ESC e C
+        if self.hud.death_active:
+            if event.type == pygame.KEYDOWN:
+                if self.hud._showing_controls:
+                    if event.key in (pygame.K_c, pygame.K_ESCAPE):
+                        self.hud.hide_controls()
+                elif self.hud.death_ready_for_input:
+                    if event.key in (pygame.K_RETURN, pygame.K_SPACE):
+                        self.hud.hide_death()
+                        self._setup()
+                    elif event.key == pygame.K_ESCAPE:
+                        self.hud.hide_death()
+                        self._go_to_menu()
+                    elif event.key == pygame.K_c:
+                        self.hud.show_controls()
+            return
         if self.dialogue.active:
             if event.type == pygame.KEYDOWN and event.key in (pygame.K_x, pygame.K_k, pygame.K_RETURN, pygame.K_SPACE):
                 self.dialogue.advance()
@@ -402,8 +418,17 @@ class TrailScene:
         self.fx.camera_shake(5, 15)
         self.sys_msg.show("A entrada está aberta!", 180)
 
+    def _go_to_menu(self):
+        from scenes.intro_scene import IntroScene
+        from systems.karma import KarmaSystem
+        new_karma = KarmaSystem(self.bus)
+        self.scene_manager.replace(IntroScene(self.scene_manager, self.bus, new_karma, self.input))
+
     def update(self):
         if not self._ready or self._paused:
+            return
+        if self.hud.death_active:
+            self.hud.update()
             return
 
         self.time += 1
@@ -499,6 +524,9 @@ class TrailScene:
                 self._transitioning = False
                 from scenes.cave_scene import CaveScene
                 self.scene_manager.replace(CaveScene(self.scene_manager, self.bus, self.karma, self.input, self.player))
+
+        if self.player.dead and not self.hud.death_active:
+            self.hud.show_death()
 
         if self.player.x < 0:
             self.player.x = 0

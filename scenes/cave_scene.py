@@ -238,12 +238,18 @@ class CaveScene:
             return
         if self.hud.death_active:
             if event.type == pygame.KEYDOWN:
-                if event.key in (pygame.K_RETURN, pygame.K_SPACE) and self.hud.death_ready_for_input:
-                    self.hud.hide_death()
-                    self._setup()
-                elif event.key == pygame.K_ESCAPE and self.hud.death_ready_for_input:
-                    self.hud.hide_death()
-                    self._go_to_menu()
+                if self.hud._showing_controls:
+                    if event.key in (pygame.K_c, pygame.K_ESCAPE):
+                        self.hud.hide_controls()
+                elif self.hud.death_ready_for_input:
+                    if event.key in (pygame.K_RETURN, pygame.K_SPACE):
+                        self.hud.hide_death()
+                        self._setup()
+                    elif event.key == pygame.K_ESCAPE:
+                        self.hud.hide_death()
+                        self._go_to_menu()
+                    elif event.key == pygame.K_c:
+                        self.hud.show_controls()
             return
         if self.dialogue.active:
             if event.type == pygame.KEYDOWN and event.key in (pygame.K_x, pygame.K_k, pygame.K_RETURN, pygame.K_SPACE):

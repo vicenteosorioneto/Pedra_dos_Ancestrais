@@ -121,7 +121,7 @@ def _draw_pedra_bg(surf, cam_x):
     """Pedra do Castelo no layer de parallax (layer 1, vel 0.15)."""
     offset = int(cam_x * 0.15)
     cx = SCREEN_W // 2 + 60 - offset % (SCREEN_W + 200)
-    cy = SCREEN_H - 130
+    cy = SCREEN_H - 220
     _draw_pedra_bg_art(surf, cx, cy, scale=0.7)
 
 
@@ -267,15 +267,21 @@ class VillageScene:
         if not self._ready:
             return
 
-        # Tela de morte — só aceita ENTER e ESC
+        # Tela de morte — aceita ENTER, ESC e C
         if self.hud.death_active:
             if event.type == pygame.KEYDOWN:
-                if event.key in (pygame.K_RETURN, pygame.K_SPACE) and self.hud.death_ready_for_input:
-                    self.hud.hide_death()
-                    self._setup()
-                elif event.key == pygame.K_ESCAPE and self.hud.death_ready_for_input:
-                    self.hud.hide_death()
-                    self._go_to_menu()
+                if self.hud._showing_controls:
+                    if event.key in (pygame.K_c, pygame.K_ESCAPE):
+                        self.hud.hide_controls()
+                elif self.hud.death_ready_for_input:
+                    if event.key in (pygame.K_RETURN, pygame.K_SPACE):
+                        self.hud.hide_death()
+                        self._setup()
+                    elif event.key == pygame.K_ESCAPE:
+                        self.hud.hide_death()
+                        self._go_to_menu()
+                    elif event.key == pygame.K_c:
+                        self.hud.show_controls()
             return
 
         if self.dialogue.active:
@@ -304,15 +310,24 @@ class VillageScene:
         for slot in self._npc_slots:
             npc = slot["npc"]
             if abs(pr.centerx - npc.rect.centerx) < 40 and abs(pr.centery - npc.rect.centery) < 40:
+                # Congela o NPC durante o diálogo
+                npc.frozen = True
+
                 # Criança tem dois diálogos: primeiro e segundo
                 if slot["key"] == "crianca":
                     if not slot["talked"]:
                         slot["talked"] = True
                         self.karma.conversou_com_npc()
-                        self.dialogue.open("crianca", avatar_surf=npc.get_avatar())
+                        def on_close_crianca(n=npc):
+                            n.frozen = False
+                        self.dialogue.open("crianca", avatar_surf=npc.get_avatar(), on_close=on_close_crianca)
                     elif not slot.get("talked_2", False):
                         slot["talked_2"] = True
-                        self.dialogue.open("crianca_2", avatar_surf=npc.get_avatar())
+                        def on_close_crianca2(n=npc):
+                            n.frozen = False
+                        self.dialogue.open("crianca_2", avatar_surf=npc.get_avatar(), on_close=on_close_crianca2)
+                    else:
+                        npc.frozen = False
                     return
 
                 if not slot["talked"]:
@@ -320,6 +335,7 @@ class VillageScene:
                     self.karma.conversou_com_npc()
 
                 def on_close(s=slot):
+                    s["npc"].frozen = False
                     if s["key"] == "zequinha" and not self._zequinha_disappeared:
                         self._zequinha_disappeared = True
                         # Partículas de desaparecimento espiritual
