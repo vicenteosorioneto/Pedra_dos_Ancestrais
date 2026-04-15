@@ -244,7 +244,7 @@ class VillageScene:
              "key": "crianca",     "name": "Criança",         "talked": False},
             {"npc": VillagerNPC(420, ground_y, variant=1, patrol_range=0),
              "key": "aldeao_2",    "name": "Aldeão",          "talked": False},
-            {"npc": ElderNPC(500, ground_y),
+            {"npc": ElderNPC(560, ground_y),
              "key": "zequinha",    "name": "Seu Zequinha",    "talked": False},
             {"npc": VillagerNPC(620, ground_y, variant=2, patrol_range=0),
              "key": "aldeao_2",    "name": "Aldeão",          "talked": False},
