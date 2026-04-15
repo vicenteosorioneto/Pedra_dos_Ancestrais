@@ -36,12 +36,14 @@ def _build_ruins_map():
         data[20][col] = 4
         data[21][col] = 4
 
-    # Plataformas de ruínas (alturas escalonadas)
+    # Plataformas de ruínas
+    # Altura máxima segura: ~4 tiles acima do chão (linha 16).
+    # JUMP_FORCE=-8 → altura máx ≈ 80px ≈ 5 tiles. Deixamos margem.
     platforms = [
-        (range(7,  15), 13),
-        (range(22, 28), 11),
-        (range(34, 42), 12),
-        (range(46, 52),  9),
+        (range(7,  15), 13),   # 3 tiles acima do chão — fácil
+        (range(22, 28), 12),   # 4 tiles acima do chão — médio
+        (range(34, 42), 13),   # 3 tiles acima do chão — fácil
+        (range(46, 52), 12),   # 4 tiles acima do chão — médio
     ]
     for cols, row in platforms:
         for col in cols:
@@ -50,11 +52,11 @@ def _build_ruins_map():
                 if row + 1 < ROWS:
                     data[row + 1][col] = 8
 
-    # Pilares verticais de ruínas (colunas quebradas)
-    for col in [5, 6, 18, 19, 31, 32, 43, 44]:
+    # Pilares decorativos curtos (apenas 2 tiles de altura — não bloqueiam)
+    # Os pilares altos são desenhados no fundo via _draw_ruins_bg (não sólidos)
+    for col in [5, 20, 33, 46]:
         if col < COLS:
-            top = 7 if col in [5, 31] else 9   # pilares quebrados em alturas distintas
-            for row in range(top, 16):
+            for row in range(14, 16):   # só 2 tiles de altura — base decorativa
                 if data[row][col] == 0:
                     data[row][col] = 8
 
