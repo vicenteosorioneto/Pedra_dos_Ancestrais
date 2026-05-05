@@ -1,6 +1,7 @@
 # scenes/ending_scene.py — Tela de final do jogo
 
 import pygame
+import math
 from settings import SCREEN_W, SCREEN_H
 from systems.karma import KarmaSystem
 from art.fx import ScreenEffects
@@ -141,6 +142,8 @@ class EndingScene:
                 b = int(50  + t * 80)
             pygame.draw.line(surf, (r, g, b), (0, y), (SCREEN_W, y))
 
+        self._draw_final_vignette(surf, title_col)
+
         # Título
         title  = self._font_title.render(title_text, True, title_col)
         shadow = self._font_title.render(title_text, True, (20, 10, 5))
@@ -185,3 +188,36 @@ class EndingScene:
             surf.blit(ps, (px, SCREEN_H - 18))
 
         self.fx.draw(surf)
+
+    def _draw_final_vignette(self, surf, accent):
+        base_y = 238
+        pygame.draw.rect(surf, (22, 15, 12), (0, base_y, SCREEN_W, SCREEN_H - base_y))
+        if self.final_type == "verdadeiro":
+            sun_x = 505 + int(math.sin(self.time * 0.02) * 4)
+            pygame.draw.circle(surf, (230, 190, 80), (sun_x, 78), 24)
+            for x in range(60, SCREEN_W, 90):
+                pygame.draw.rect(surf, (55, 34, 18), (x, 198, 42, 40))
+                pygame.draw.polygon(surf, (95, 55, 25), [(x - 4, 198), (x + 21, 175), (x + 46, 198)])
+            pygame.draw.circle(surf, (50, 90, 45), (110, 224), 18)
+            pygame.draw.rect(surf, (35, 24, 18), (314, 203, 10, 35))
+            pygame.draw.circle(surf, accent, (319, 194), 7)
+            pygame.draw.line(surf, accent, (319, 210), (300, 224), 2)
+            pygame.draw.line(surf, accent, (319, 210), (339, 224), 2)
+        elif self.final_type == "ruim":
+            cx, cy = SCREEN_W // 2, 168
+            for r in range(90, 25, -14):
+                col = (70 + r // 4, 28, 24)
+                pygame.draw.circle(surf, col, (cx, cy), r, 2)
+            pygame.draw.rect(surf, (30, 18, 16), (cx - 8, cy + 28, 16, 42))
+            pygame.draw.circle(surf, (140, 55, 45), (cx, cy + 20), 8)
+            for i in range(8):
+                ox = int(math.sin(self.time * 0.04 + i) * 10)
+                pygame.draw.line(surf, (150, 55, 40), (cx, cy + 35), (cx - 80 + i * 23 + ox, base_y), 1)
+        else:
+            moon_x = 500
+            pygame.draw.circle(surf, (190, 185, 160), (moon_x, 74), 18)
+            pygame.draw.polygon(surf, (38, 31, 42), [(0, base_y), (140, 160), (300, base_y)])
+            pygame.draw.polygon(surf, (45, 36, 50), [(220, base_y), (370, 145), (560, base_y)])
+            pygame.draw.rect(surf, (30, 24, 28), (318, 206, 9, 32))
+            pygame.draw.circle(surf, (160, 150, 200), (322, 198), 7)
+            pygame.draw.line(surf, (120, 110, 160), (322, 238), (352, 238), 2)

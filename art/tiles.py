@@ -312,7 +312,7 @@ TILE_GENERATORS = {
     15: tile_crate,
 }
 
-SOLID_TILES = {1, 2, 3, 4, 8, 9, 10, 11, 15}
+SOLID_TILES = {1, 2, 3, 4, 8, 9, 10, 15}
 
 def get_tile_surface(tile_id):
     """Retorna Surface cacheada para o tile_id."""

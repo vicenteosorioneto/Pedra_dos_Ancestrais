@@ -24,7 +24,10 @@ class Game:
 
     def __init__(self) -> None:
         pygame.init()
-        pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
+        try:
+            pygame.mixer.init(frequency=22050, size=-16, channels=1, buffer=512)
+        except pygame.error:
+            pass
 
         self.window  = pygame.display.set_mode((WINDOW_W, WINDOW_H))
         pygame.display.set_caption(TITLE)
@@ -45,6 +48,8 @@ class Game:
         self.karma         = KarmaSystem(self.bus)
         self.input_manager = InputManager()
         self.scene_manager = SceneManager()
+        from systems.audio import AudioManager
+        self.audio = AudioManager(self.bus)
 
     def start(self) -> None:
         """Carrega a cena inicial. Chamado por main.py após __init__."""
@@ -78,6 +83,7 @@ class Game:
     def _update(self) -> None:
         if scene := self.scene_manager.current:
             scene.update()
+            self.audio.update_for_scene(scene)
         self.scene_manager.apply_pending()
 
     def _draw(self) -> None:

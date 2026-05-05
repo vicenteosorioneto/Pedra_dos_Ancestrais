@@ -55,6 +55,19 @@ _NPC_NAMES: dict[str, str] = {
     "registro_ruinas_1":     "[Inscrição]",
 }
 
+SHORT_DIALOGUE_LINES = {
+    "aldeao_0",
+    "aldeao_1",
+    "aldeao_2",
+    "comerciante",
+    "crianca",
+    "crianca_2",
+    "morador_medo",
+    "zequinha",
+    "peregrino_floresta",
+    "velho_da_pedra",
+}
+
 
 class DialogueBox:
     BOX_H     = 76
@@ -93,6 +106,8 @@ class DialogueBox:
         self._init_fonts()
         self.active       = True
         self.lines        = _loader.get(npc_key)
+        if npc_key in SHORT_DIALOGUE_LINES and len(self.lines) > 4:
+            self.lines = self.lines[:4]
         self.npc_name     = _NPC_NAMES.get(npc_key, npc_key.replace("_"," ").title())
         self.avatar_surf  = avatar_surf
         self.current_line = 0

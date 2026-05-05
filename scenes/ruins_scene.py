@@ -15,6 +15,8 @@ from settings import (
 from systems.tilemap import Tilemap
 from systems.dialogue import DialogueBox, SystemMessage
 from systems.hud import HUD
+from systems.minigames import MiniGameTotem
+from systems.rewards import RewardPickup, draw_rewards, update_rewards
 from entities.player import Player
 from core.camera import Camera
 from art.fx import ParticleSystem, ScreenEffects
@@ -60,8 +62,8 @@ def _build_ruins_map():
                 if data[row][col] == 0:
                     data[row][col] = 8
 
-    registro_positions = [(11, 16), (37, 16)]
-    altar_pos = (26, 16)   # coluna, linha do chão
+    registro_positions = [(17, 16), (44, 16)]
+    altar_pos = (30, 16)   # coluna, linha do chão; livre entre plataformas
 
     return data, COLS, ROWS, registro_positions, altar_pos
 
@@ -295,6 +297,20 @@ class RuinsScene:
         self.altar          = RuinsAltar(altar_x, altar_y)
         self._altar_done    = False
 
+        self.rewards = [
+            RewardPickup(240, 16 * TILE_SIZE - 14, "heart", "Bencao das ruinas: +1 vida"),
+            RewardPickup(720, 16 * TILE_SIZE - 14, "heart_max", "Selo antigo: vida maxima +1"),
+        ]
+
+        def _ruins_game_win():
+            self.karma.resolveu_puzzle_perfeito()
+            self.particles.emit_phase_burst(18 * TILE_SIZE, 13 * TILE_SIZE)
+            self.sys_msg.show("Jogo dos simbolos concluido: sabedoria +1", 150)
+
+        self.minigames = [
+            MiniGameTotem(18 * TILE_SIZE, 16 * TILE_SIZE - 22, "Jogo dos simbolos", _ruins_game_win),
+        ]
+
         # Registros
         self.registros = [
             RuinsRegistro(
@@ -332,6 +348,10 @@ class RuinsScene:
             if event.type == pygame.KEYDOWN and event.key in (pygame.K_x, pygame.K_k, pygame.K_RETURN, pygame.K_SPACE):
                 self.dialogue.advance()
             return
+        for totem in getattr(self, "minigames", []):
+            if totem.game.active:
+                totem.handle_event(event)
+                return
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 self._paused = not self._paused
@@ -346,6 +366,7 @@ class RuinsScene:
             if event.key in (pygame.K_x, pygame.K_k) and not self._paused:
                 self._try_interact_altar()
                 self._try_interact_registro()
+                self._try_interact_minigame()
 
     def _try_interact_altar(self):
         if self._altar_done:
@@ -377,6 +398,13 @@ class RuinsScene:
 
     # ── Update ───────────────────────────────────────────────────────────────
 
+    def _try_interact_minigame(self):
+        pr = self.player.rect
+        for totem in self.minigames:
+            if not totem.done and pr.inflate(34, 34).colliderect(totem.rect):
+                totem.open()
+                return
+
     def update(self):
         if not self._ready or self._paused:
             return
@@ -385,6 +413,17 @@ class RuinsScene:
             return
 
         self.time += 1
+
+        for totem in self.minigames:
+            totem.update()
+
+        if any(totem.game.active for totem in self.minigames):
+            self.dialogue.update()
+            self.sys_msg.update()
+            self.particles.update()
+            self.fx.update()
+            self.hud.update()
+            return
 
         if not self.dialogue.active:
             self.player.update(self.input.poll(), self.tilemap, self.particles)
@@ -411,9 +450,16 @@ class RuinsScene:
                             self.hud.show_interaction("ler inscrição")
                         break
 
+        if not self.dialogue.active:
+            for totem in self.minigames:
+                if not totem.done and pr.inflate(34, 34).colliderect(totem.rect):
+                    self.hud.show_interaction("jogar desafio dos simbolos")
+                    break
+
         for registro in self.registros:
             registro.update()
 
+        update_rewards(self.rewards, self.player, self.particles, self.sys_msg, self.karma, self.bus)
         self.dialogue.update()
         self.sys_msg.update()
         self.particles.update()
@@ -462,6 +508,9 @@ class RuinsScene:
         self.tilemap.draw(surf, cam_x, cam_y, SCREEN_W, SCREEN_H)
 
         self.altar.draw(surf, cam_x, cam_y)
+        draw_rewards(self.rewards, surf, cam_x, cam_y)
+        for totem in self.minigames:
+            totem.draw_world(surf, cam_x, cam_y)
 
         for registro in self.registros:
             registro.draw(surf, cam_x, cam_y)
@@ -472,6 +521,8 @@ class RuinsScene:
         self.hud.draw(surf, self.player.hp, self.player.max_hp)
         self.dialogue.draw(surf)
         self.sys_msg.draw(surf)
+        for totem in self.minigames:
+            totem.draw_overlay(surf)
         self.fx.draw(surf)
 
         # Seta de saída (aparece sempre que o altar foi ativado ou chegou perto do fim)

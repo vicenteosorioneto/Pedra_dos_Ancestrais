@@ -1,28 +1,34 @@
 # A Pedra dos Ancestrais
 
-Jogo 2D de plataforma com RPG leve ambientado no **sertão nordestino brasileiro**.
-O jogador controla Caio, guiado pelo vento até a misteriosa Pedra dos Ancestrais.
+Jogo 2D de plataforma com elementos leves de RPG, ambientado no sertão nordestino brasileiro. O jogador controla Caio, um jovem guiado pelo vento até a misteriosa Pedra dos Ancestrais, onde escolhas silenciosas moldam o final da jornada.
 
----
+## Visão Geral
 
-## Como clonar e rodar
+- **Gênero:** plataforma 2D narrativo com RPG leve
+- **Plataforma:** PC, via Python e Pygame
+- **Resolução interna:** 640 x 360
+- **Janela:** 1280 x 720, com upscale 2x
+- **Arte:** pixel art procedural gerada em código
+- **Progressão:** atos, exploração, combate simples, diálogos e sistema de karma invisível
 
-### Requisitos
+## Requisitos
 
-- [Python 3.9+](https://www.python.org/downloads/) instalado e no PATH
-- Git instalado (`git --version` para confirmar)
-- Nenhuma outra dependência além do Pygame
+- Python 3.9 ou superior
+- Git
+- Pygame 2.1 ou superior
 
-### Passo a passo
+As dependências do projeto estão em `requirements.txt`.
 
-**1. Clone o repositório**
+## Como Rodar
+
+Clone o repositório:
 
 ```bash
 git clone https://github.com/vicenteosorioneto/pedra_dos_ancestrais.git
 cd pedra_dos_ancestrais
 ```
 
-**2. Crie e ative um ambiente virtual** *(recomendado)*
+Crie e ative um ambiente virtual:
 
 ```bash
 # Windows
@@ -34,131 +40,136 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-**3. Instale as dependências**
+Instale as dependências:
 
 ```bash
 python -m pip install -r requirements.txt
 ```
 
-**4. Rode o jogo**
+Execute o jogo:
 
 ```bash
 python main.py
 ```
 
-Uma janela 1280×720 vai abrir com a tela de título. Pressione qualquer tecla para começar.
+Uma janela 1280 x 720 será aberta com a tela de título. Pressione uma tecla para começar.
 
-### Rodando os testes
-
-```bash
-pytest tests/ -v
-```
-
-Todos os 55 testes devem passar. Nenhum deles abre janela ou depende do Pygame instalado com display.
-
----
-
-## Início rápido
+## Início Rápido
 
 ```bash
-# Versão resumida para quem já tem Python e Git
 git clone https://github.com/vicenteosorioneto/pedra_dos_ancestrais.git
 cd pedra_dos_ancestrais
 python -m pip install -r requirements.txt
 python main.py
 ```
 
-**Requisitos:** Python 3.9+ · Pygame 2.1+
+No PowerShell, evite executar `pip install pygame>=2.1.0` sem aspas, porque o caractere `>` pode ser interpretado como redirecionamento. Se quiser instalar diretamente, use:
 
-No PowerShell, evite `pip install pygame>=2.1.0` sem aspas: o `>` pode ser interpretado como redirecionamento e criar um arquivo como `=2.1.0`. Se quiser instalar diretamente sem `requirements.txt`, use `python -m pip install "pygame>=2.1.0"`.
-
----
+```bash
+python -m pip install "pygame>=2.1.0"
+```
 
 ## Controles
 
-| Tecla              | Ação       |
-|--------------------|------------|
-| `A` / `←`          | Mover esquerda |
-| `D` / `→`          | Mover direita  |
-| `W` / `↑` / `Espaço` | Pular       |
-| `Z` ou `J`         | Atacar     |
-| `X` ou `K`         | Interagir  |
-| `ESC`              | Pausar     |
-| `Alt + F4`         | Fechar     |
+| Tecla | Ação |
+| --- | --- |
+| `A` / `←` | Mover para a esquerda |
+| `D` / `→` | Mover para a direita |
+| `W` / `↑` / `Espaço` | Pular |
+| `Z` ou `J` | Atacar |
+| `X` ou `K` | Interagir |
+| `ESC` | Pausar |
+| `Alt + F4` | Fechar |
 
----
+## Mecânicas
 
-## Estrutura do projeto
+| Mecânica | Onde fica |
+| --- | --- |
+| Movimento do jogador | `gameplay/player/player.py` |
+| Estados do jogador | `gameplay/player/states.py` |
+| Coyote time e jump buffer | `config/physics.py` |
+| Colisão por tiles | `systems/tilemap.py` |
+| Sistema de karma | `systems/karma.py` |
+| Diálogos | `systems/dialogue.py` e `systems/dialogue_loader.py` |
+| Dados de diálogo | `content/dialogue/npcs.json` |
+| HUD | `systems/hud.py` |
+| Efeitos visuais | `art/fx.py` |
 
-```
+## Estrutura do Projeto
+
+```text
 pedra_dos_ancestrais/
-│
-├── main.py              # Ponto de entrada
-├── settings.py          # Constantes globais (resolução, física, paletas, IDs)
-├── requirements.txt
-│
-├── core/                # Motor do jogo
-│   ├── game.py          # Loop principal, inicialização, upscale
-│   ├── scene_manager.py # Pilha de cenas (push / pop / replace)
-│   └── camera.py        # Câmera com lerp e parallax
-│
-├── scenes/              # Cenas / atos do jogo
-│   ├── intro_scene.py   # Tela de título
-│   ├── village_scene.py # Ato 1 — Vila do sertão
-│   ├── trail_scene.py   # Ato 2 — Trilha noturna
-│   └── cave_scene.py    # Ato 3 — Caverna / boss
-│
-├── entities/            # Objetos do mundo
-│   ├── player.py        # Caio (protagonista)
-│   ├── npc.py           # NPCs com patrulha e diálogo
-│   ├── enemy.py         # Classe base de inimigo
-│   ├── bat_enemy.py     # Morcego corrompido
-│   └── guardian_statue.py # Mini-boss — Guardião Estátua
-│
-├── systems/             # Subsistemas reutilizáveis
-│   ├── karma.py         # Karma silencioso (coragem / ganância / sabedoria)
-│   ├── dialogue.py      # Caixa de diálogo com efeito typewriter
-│   ├── hud.py           # HUD (corações, prompt de interação, partículas)
-│   └── tilemap.py       # Renderização e colisão por tiles
-│
-├── art/                 # Pipeline de arte procedural
-│   ├── sprites.py       # Sprites gerados em código (Caio, NPCs, inimigos)
-│   ├── tiles.py         # Tiles 16×16 com cache
-│   ├── palette.py       # Paletas de cores nomeadas
-│   └── fx.py            # Partículas, efeitos de tela, iluminação
-│
-└── docs/                # Documentação técnica
-    ├── ARCHITECTURE.md  # Arquitetura, fluxo de dados, ciclo de vida
-    └── HOW_TO_EXTEND.md # Como adicionar cenas, entidades, tiles, diálogos
+|
+|-- main.py                  # Ponto de entrada
+|-- requirements.txt         # Dependências
+|-- settings.py              # Shim de compatibilidade para configurações antigas
+|
+|-- config/                  # Constantes por domínio
+|   |-- display.py           # Tela, escala, FPS e título
+|   |-- physics.py           # Física, pulo, gravidade e tiles
+|   |-- palette.py           # Paletas globais
+|   `-- scene_ids.py         # IDs das cenas
+|
+|-- core/                    # Motor do jogo
+|   |-- game.py              # Loop principal e render final
+|   |-- scene_manager.py     # Pilha de cenas
+|   |-- camera.py            # Câmera
+|   |-- event_bus.py         # Comunicação por eventos
+|   `-- input_manager.py     # Abstração de input
+|
+|-- scenes/                  # Cenas e atos
+|   |-- intro_scene.py       # Tela de título
+|   |-- village_scene.py     # Vila
+|   |-- trail_scene.py       # Trilha
+|   |-- cave_scene.py        # Caverna
+|   |-- forest_scene.py      # Floresta
+|   |-- ruins_scene.py       # Ruínas
+|   `-- ending_scene.py      # Final
+|
+|-- gameplay/                # Lógica de jogo refatorada
+|   |-- player/              # Player e estados
+|   |-- enemies/             # Inimigos e chefe
+|   `-- npcs/                # NPCs
+|
+|-- entities/                # Shims legados para compatibilidade
+|-- systems/                 # Karma, diálogo, HUD e tilemap
+|-- art/                     # Sprites, tiles, paletas e efeitos procedurais
+|-- content/                 # Dados puros, como diálogos em JSON
+|-- shared/                  # Enums e utilitários compartilhados
+|-- docs/                    # Documentação técnica e design
+`-- tests/                   # Testes automatizados
 ```
 
----
+## Pipeline de Render
 
-## Mecânicas principais
-
-| Mecânica          | Arquivo fonte                |
-|-------------------|------------------------------|
-| Física / pulo     | `entities/player.py`         |
-| Coyote time       | `settings.py` → `COYOTE_FRAMES` |
-| Colisão AABB      | `systems/tilemap.py`         |
-| Sistema de karma  | `systems/karma.py`           |
-| Diálogos          | `systems/dialogue.py` → `DIALOGUE_DATA` |
-| Efeitos visuais   | `art/fx.py`                  |
-
----
-
-## Pipeline de render
-
-```
-640×360 (interna) ──upscale 2×──▶ 1280×720 (janela)
+```text
+Superfície interna 640 x 360
+        |
+        v
+Upscale 2x
+        |
+        v
+Janela 1280 x 720
 ```
 
-Todos os sistemas renderizam na superfície interna. O `Game._draw()` faz o
-upscale ao final de cada frame.
+Todos os sistemas desenham na superfície interna. No fim de cada frame, `core/game.py` amplia a imagem para a janela final.
 
----
+## Testes
 
-## Documentação completa
+Execute:
+
+```bash
+pytest tests/ -v
+```
+
+Os testes cobrem partes centrais como karma, event bus, carregamento de diálogos e estados do jogador. Eles não dependem de uma janela gráfica aberta.
+
+## Documentação
 
 - [Arquitetura](docs/ARCHITECTURE.md)
 - [Como estender o jogo](docs/HOW_TO_EXTEND.md)
+- [Game Design Document](docs/GDD.md)
+
+## Observações
+
+O arquivo `settings.py` existe para manter compatibilidade com imports antigos. Para código novo, prefira importar diretamente dos módulos em `config/`.

@@ -9,6 +9,7 @@ from settings import (
 from systems.tilemap import Tilemap
 from systems.dialogue import DialogueBox, SystemMessage
 from systems.hud import HUD
+from systems.rewards import RewardPickup, draw_rewards, update_rewards
 from entities.player import Player
 from entities.bat_enemy import BatEnemy
 from core.camera import Camera
@@ -22,23 +23,17 @@ def _build_trail_map():
 
     # Chão base
     for col in range(COLS):
-        data[18][col] = 1
-        data[19][col] = 2
+        data[17][col] = 1
+        data[18][col] = 2
+        data[19][col] = 3
         data[20][col] = 3
         data[21][col] = 3
 
     # Degraus subindo da esquerda para direita (trilha mais longa)
     steps = [
-        (0,  18, range(0, 10)),
-        (1,  17, range(8, 18)),
-        (2,  16, range(16, 26)),
-        (3,  15, range(24, 34)),
-        (2,  16, range(32, 42)),
-        (4,  14, range(40, 50)),
-        (3,  15, range(48, 58)),
-        (5,  13, range(56, 66)),
-        (4,  14, range(64, 74)),
-        (6,  12, range(72, 84)),
+        (2,  15, range(16, 26)),
+        (3,  14, range(36, 46)),
+        (4,  13, range(60, 70)),
     ]
     for dy, row, cols in steps:
         for col in cols:
@@ -46,6 +41,15 @@ def _build_trail_map():
                 data[row][col] = 8   # pedra_castelo
                 for y in range(row+1, min(row+3, ROWS)):
                     data[y][col] = 2
+
+    # Reabre a faixa de caminhada depois dos blocos decorativos.
+    for col in range(COLS):
+        data[16][col] = 0
+        data[17][col] = 1
+        data[18][col] = 2
+        data[19][col] = 3
+        data[20][col] = 3
+        data[21][col] = 3
 
     # Plataformas flutuantes com pedra de castelo
     platforms = [
@@ -63,16 +67,25 @@ def _build_trail_map():
                 data[row][col] = 8
 
     # 5 altares espalhados pela trilha
-    altar_positions = [(15, 17), (30, 16), (47, 14), (63, 13), (79, 12)]
+    altar_positions = [(15, 17), (30, 17), (47, 17), (63, 17), (79, 17)]
 
     # 3 inscrições de pedra (registros) ao longo da trilha
-    registro_positions = [(22, 17), (52, 14), (71, 12)]
+    registro_positions = [(22, 17), (52, 17), (71, 17)]
 
     # Parede de bloqueio no fim da trilha (toda a altura)
     WALL_COLS = range(86, 90)
     for col in WALL_COLS:
         for row in range(0, ROWS):
             data[row][col] = 8   # pedra_castelo — sólido
+
+    for col in WALL_COLS:
+        for row in range(0, ROWS):
+            data[row][col] = 0
+        data[17][col] = 1
+        data[18][col] = 2
+        data[19][col] = 3
+        data[20][col] = 3
+        data[21][col] = 3
 
     return data, COLS, ROWS, altar_positions, registro_positions, list(WALL_COLS)
 
@@ -312,6 +325,12 @@ class TrailScene:
             for i, pos in enumerate(registro_positions)
         ]
 
+        self.rewards = [
+            RewardPickup(24 * TILE_SIZE, 17 * TILE_SIZE - 14, "heart", "Luz da trilha: +1 vida"),
+            RewardPickup(59 * TILE_SIZE, 17 * TILE_SIZE - 14, "heart", "Luz da trilha: +1 vida"),
+            RewardPickup(80 * TILE_SIZE, 17 * TILE_SIZE - 14, "wisdom", "Fragmento ancestral: sabedoria +1"),
+        ]
+
         # Tochas
         self.torches = [
             (col * TILE_SIZE, row * TILE_SIZE - 30)
@@ -411,9 +430,14 @@ class TrailScene:
         for col in self._wall_cols:
             for row in range(self.WORLD_ROWS):
                 self.tilemap.set_tile(col, row, 0)
+            self.tilemap.set_tile(col, 17, 1)
+            self.tilemap.set_tile(col, 18, 2)
+            self.tilemap.set_tile(col, 19, 3)
+            self.tilemap.set_tile(col, 20, 3)
+            self.tilemap.set_tile(col, 21, 3)
         # Burst de luz no local da parede
         wall_x = self._wall_cols[0] * TILE_SIZE
-        wall_y = 10 * TILE_SIZE
+        wall_y = 15 * TILE_SIZE
         self.particles.emit_boss_death(wall_x, wall_y)
         self.fx.camera_shake(5, 15)
         self.sys_msg.show("A entrada está aberta!", 180)
@@ -472,6 +496,8 @@ class TrailScene:
         # Registros
         for registro in self.registros:
             registro.update()
+
+        update_rewards(self.rewards, self.player, self.particles, self.sys_msg, self.karma, self.bus)
 
         self.dialogue.update()
         self.sys_msg.update()
@@ -563,6 +589,8 @@ class TrailScene:
         for registro in self.registros:
             registro.draw(surf, cam_x, cam_y)
 
+        draw_rewards(self.rewards, surf, cam_x, cam_y)
+
         # NPC Velho
         if hasattr(self, '_velho'):
             self._velho.draw(surf, cam_x, cam_y)
@@ -571,17 +599,20 @@ class TrailScene:
         for enemy in self.enemies:
             enemy.draw(surf, cam_x, cam_y)
 
-        # Portal (se aberto)
-        if self._portal_open:
-            px = self.NEXT_SCENE_X - 16 - cam_x
-            py = 12 * TILE_SIZE - cam_y
-            t = self.time
-            for ring in range(3):
-                r = 12 + ring * 6 + int(math.sin(t * 0.1 + ring) * 3)
-                alpha = 100 + int(math.sin(t * 0.1) * 50)
-                gsurf = pygame.Surface((r*2+2, r*2+2), pygame.SRCALPHA)
-                pygame.draw.circle(gsurf, (80, 160, 220, alpha), (r+1, r+1), r, 2)
-                surf.blit(gsurf, (px - r, py - r))
+        # Portal no fim da trilha
+        px = self.NEXT_SCENE_X - 16 - cam_x
+        py = 15 * TILE_SIZE - cam_y
+        t = self.time
+        portal_col = (80, 160, 220) if self._portal_open else (90, 70, 120)
+        for ring in range(3):
+            r = 12 + ring * 6 + int(math.sin(t * 0.1 + ring) * 3)
+            alpha = (100 + int(math.sin(t * 0.1) * 50)) if self._portal_open else 55
+            gsurf = pygame.Surface((r*2+2, r*2+2), pygame.SRCALPHA)
+            pygame.draw.circle(gsurf, (*portal_col, alpha), (r+1, r+1), r, 2)
+            surf.blit(gsurf, (px - r, py - r))
+        if not self._portal_open:
+            pygame.draw.line(surf, (150, 110, 170), (px - 16, py), (px + 16, py), 1)
+            pygame.draw.line(surf, (150, 110, 170), (px, py - 16), (px, py + 16), 1)
 
         # Partículas
         self.particles.draw(surf, cam_x, cam_y)

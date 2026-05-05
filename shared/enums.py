@@ -43,7 +43,7 @@ class TileID(IntEnum):
 SOLID_TILE_IDS: frozenset[int] = frozenset({
     TileID.PEDRA_TOPO, TileID.PEDRA_MEIO, TileID.PEDRA_BASE,
     TileID.TERRA, TileID.PEDRA_CASTELO, TileID.ROCHA_CAVE,
-    TileID.ROCHA_GLOW, TileID.CRISTAL, TileID.CAIXOTE,
+    TileID.ROCHA_GLOW, TileID.CAIXOTE,
 })
 
 

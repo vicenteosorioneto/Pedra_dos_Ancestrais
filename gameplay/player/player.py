@@ -54,10 +54,6 @@ class Player:
         self.anim_timer  = 0
         self.walk_frames = [1, 0, 2, 0]
 
-        # Breathing idle
-        self.breath_timer  = 0
-        self.breath_offset = 0
-
         # Ataque
         self.attack_timer    = 0
         self.attack_cooldown = 0
@@ -228,10 +224,6 @@ class Player:
             else:
                 self.anim_frame = 0
 
-        # Breathing idle
-        self.breath_timer += 1
-        self.breath_offset = 1 if (self._state == PlayerState.IDLE and (self.breath_timer // 30) % 2 == 0) else 0
-
         # Poeira ao caminhar
         if particle_sys and self.on_ground and self._state == PlayerState.WALKING:
             self._step_timer += 1
@@ -271,5 +263,5 @@ class Player:
             sprite = pygame.transform.flip(sprite, True, False)
 
         sx = int(self.x - cam_x) - 2
-        sy = int(self.y - cam_y) - 4 + self.breath_offset
+        sy = int(self.y - cam_y) - 4
         surf.blit(sprite, (sx, sy))

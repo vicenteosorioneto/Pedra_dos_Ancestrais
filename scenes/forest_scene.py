@@ -15,6 +15,7 @@ from settings import (
 from systems.tilemap import Tilemap
 from systems.dialogue import DialogueBox, SystemMessage
 from systems.hud import HUD
+from systems.rewards import RewardPickup, draw_rewards, update_rewards
 from entities.player import Player
 from entities.bat_enemy import BatEnemy
 from core.camera import Camera
@@ -223,7 +224,7 @@ class ForestScene:
 
         # NPC: Peregrino (usa sprite de ElderNPC para distinção visual)
         from entities.npc import ElderNPC
-        ground_y = 15 * TILE_SIZE - Player.H
+        ground_y = 16 * TILE_SIZE - ElderNPC.H
         self._peregrino = ElderNPC(120, ground_y)
         self._peregrino_talked = False
 
@@ -231,6 +232,10 @@ class ForestScene:
         self.registros = [
             ForestRegistro(pos[0] * TILE_SIZE, pos[1] * TILE_SIZE - 16, f"registro_floresta_{i}")
             for i, pos in enumerate(registro_positions)
+        ]
+
+        self.rewards = [
+            RewardPickup(31 * TILE_SIZE, 12 * TILE_SIZE - 14, "wisdom", "Folha marcada: sabedoria +1"),
         ]
 
         self.fx.fade_in(frames=22)
@@ -345,6 +350,8 @@ class ForestScene:
         for registro in self.registros:
             registro.update()
 
+        update_rewards(self.rewards, self.player, self.particles, self.sys_msg, self.karma, self.bus)
+
         if not self.dialogue.active:
             for registro in self.registros:
                 if (abs(pr.centerx - registro.rect.centerx) < 35 and
@@ -404,6 +411,8 @@ class ForestScene:
 
         for registro in self.registros:
             registro.draw(surf, cam_x, cam_y)
+
+        draw_rewards(self.rewards, surf, cam_x, cam_y)
 
         for enemy in self.enemies:
             enemy.draw(surf, cam_x, cam_y)

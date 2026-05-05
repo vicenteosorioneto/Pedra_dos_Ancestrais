@@ -9,6 +9,7 @@ from settings import (
 from systems.tilemap import Tilemap
 from systems.dialogue import DialogueBox, ChoiceBox, SystemMessage
 from systems.hud import HUD
+from systems.rewards import RewardPickup, draw_rewards, update_rewards
 from entities.player import Player
 from entities.bat_enemy import BatEnemy
 from entities.guardian_statue import GuardianStatue
@@ -214,12 +215,19 @@ class CaveScene:
             for i, pos in enumerate(registro_positions)
         ]
         self._registros_read = 0
+        self.rewards = [
+            RewardPickup(26 * TILE_SIZE, 15 * TILE_SIZE - 14, "heart", "Cristal curativo: +1 vida"),
+            RewardPickup(50 * TILE_SIZE, 14 * TILE_SIZE - 14, "heart", "Cristal curativo: +1 vida"),
+            RewardPickup(73 * TILE_SIZE, 10 * TILE_SIZE - 14, "heart_max", "Cristal maior: vida maxima +1"),
+        ]
 
         # Guardião estátua (mini-boss) — mais afastado na caverna expandida
         guardian_y = 17 * TILE_SIZE - 44
         self.guardian = GuardianStatue(660, guardian_y)
         self._guardian_fight_started = False
         self._guardian_death_time    = -1
+        self._iracema_x = 930
+        self._iracema_y = 11 * TILE_SIZE - 28
 
         # Fontes de luz ambiente
         self._light_sources = [
@@ -360,13 +368,19 @@ class CaveScene:
                 self.dialogue.open("guardiao", on_close=self._on_guardian_dialogue_close)
 
         # Iracema encontro — só abre DEPOIS que o guardião foi derrotado
-        if not self._iracema_shown and self.guardian.defeated and self.player.x > 900:
+        if (not self._iracema_shown and self.guardian.defeated
+                and abs(self.player.rect.centerx - self._iracema_x) < 55):
             self._iracema_shown = True
             self.dialogue.open("iracema_proposta", on_close=self._on_iracema_proposta_close)
+        elif not self._iracema_shown and self.guardian.defeated:
+            if abs(self.player.rect.centerx - self._iracema_x) < 95:
+                self.hud.show_interaction("falar com Iracema")
 
         # Registros da câmara da memória
         for registro in self.registros:
             registro.update()
+
+        update_rewards(self.rewards, self.player, self.particles, self.sys_msg, self.karma, self.bus)
 
         # Indicador de interação com registros
         if not self.dialogue.active and not self.choice_box.active:
@@ -483,6 +497,8 @@ class CaveScene:
         for registro in self.registros:
             registro.draw(surf, cam_x, cam_y)
 
+        draw_rewards(self.rewards, surf, cam_x, cam_y)
+
         # Guardião
         if self._guardian_fight_started and not self.guardian.defeated and getattr(self, "_guardian_intro_done", False):
             self.guardian.draw(surf, cam_x, cam_y)
@@ -495,6 +511,17 @@ class CaveScene:
                 self.particles.emit_altar(gx, gy)
 
         # Partículas
+        if self.guardian.defeated:
+            ix = int(self._iracema_x - cam_x)
+            iy = int(self._iracema_y - cam_y)
+            glow = pygame.Surface((48, 58), pygame.SRCALPHA)
+            pygame.draw.ellipse(glow, (80, 160, 220, 70), (2, 2, 44, 54))
+            surf.blit(glow, (ix - 24, iy - 12))
+            pygame.draw.rect(surf, (35, 70, 95), (ix - 5, iy + 12, 10, 20))
+            pygame.draw.circle(surf, (180, 210, 220), (ix, iy + 7), 6)
+            pygame.draw.line(surf, (85, 185, 230), (ix - 8, iy + 18), (ix - 18, iy + 30), 2)
+            pygame.draw.line(surf, (85, 185, 230), (ix + 8, iy + 18), (ix + 18, iy + 30), 2)
+
         self.particles.draw(surf, cam_x, cam_y)
 
         # Player
