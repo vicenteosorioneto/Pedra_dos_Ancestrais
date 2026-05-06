@@ -68,6 +68,13 @@ def _build_trail_map():
     # 3 inscrições de pedra (registros) ao longo da trilha
     registro_positions = [(22, 17), (52, 14), (71, 12)]
 
+    # Piso sólido no final da trilha — continuidade do último degrau (row 12)
+    # cobre cols 84-85 (entre o degrau e a parede) e 90-91 (após a parede, saída)
+    for col in list(range(84, 86)) + list(range(90, COLS)):
+        data[12][col] = 8          # pedra_castelo — superfície pisável
+        for row in range(13, 18):  # preenchimento sólido até o piso base
+            data[row][col] = 2
+
     # Parede de bloqueio no fim da trilha (toda a altura)
     WALL_COLS = range(86, 90)
     for col in WALL_COLS:
