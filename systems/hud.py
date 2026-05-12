@@ -43,8 +43,8 @@ def _draw_heart(surf, x, y, full=True):
 
 
 class HUD:
-    HP_BOX_X = 4
-    HP_BOX_Y = 4
+    HP_BOX_X = 16
+    HP_BOX_Y = 16
     HP_BOX_W = 96
     HP_BOX_H = 30
 

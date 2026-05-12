@@ -145,7 +145,7 @@ class IntroScene:
         pygame.draw.circle(surf,(240,235,200),(mx,my),18)
         pygame.draw.circle(surf,(200,190,140),(mx+6,my-4),12)
 
-        _draw_pedra_castelo_large(surf, SCREEN_W//2, SCREEN_H//2+42)
+        _draw_pedra_castelo_large(surf, SCREEN_W//2, SCREEN_H//2+72)
         for p in self.particles: p.draw(surf)
 
         if self._screen == "main":   self._draw_main(surf)
@@ -254,17 +254,17 @@ class IntroScene:
 
     def _draw_main(self, surf):
         W,H = SCREEN_W, SCREEN_H
-        ft = self._f(34, bold=True)
+        ft = self._f(26, bold=True)
         title = "A PEDRA DOS ANCESTRAIS"
         sh = ft.render(title, True, (40,20,0))
         ts = ft.render(title, True, GOLD)
         tx = (W-ts.get_width())//2
-        surf.blit(sh,(tx+3,30)); surf.blit(ts,(tx,27))
-        sub = self._f(16).render("Uma lenda do Piaui", True, (220,180,120))
-        surf.blit(sub,((W-sub.get_width())//2,68))
+        surf.blit(sh,(tx+3,56)); surf.blit(ts,(tx,53))
+        sub = self._f(15).render("Uma lenda do Piaui", True, (220,180,120))
+        surf.blit(sub,((W-sub.get_width())//2,92))
 
         pw,ph = 300, len(MENU_ITEMS)*38+24
-        px = (W-pw)//2; py = H//2-18
+        px = (W-pw)//2; py = H//2+4
         panel = pygame.Surface((pw,ph), pygame.SRCALPHA)
         panel.fill((8,4,18,215))
         surf.blit(panel,(px,py))
