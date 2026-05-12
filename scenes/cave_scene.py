@@ -166,6 +166,7 @@ class CaveScene:
         self._ending_triggered  = False
         self._iracema_shown     = False
         self._camara_hint_shown = False
+        self._forced_final      = None
 
     def on_enter(self):
         self._setup()
@@ -192,6 +193,7 @@ class CaveScene:
         self._transitioning = False
         self._transition_timer = 0
         self._camara_hint_shown = False
+        self._forced_final = None
 
         # Player
         start_y = 17 * TILE_SIZE - Player.H
@@ -399,6 +401,7 @@ class CaveScene:
             ("Memorias", sum(1 for r in self.registros if r.read), len(self.registros)),
             ("Guardiao", 1 if self.guardian.defeated else 0, 1),
             ("Iracema", 1 if self._iracema_shown else 0, 1),
+            ("Escolha final", 1 if self._ending_triggered else 0, 1),
             ("Recompensas", sum(1 for r in self.rewards if r.collected), len(self.rewards)),
         ])
         self.karma.record_progress("cave_records", sum(1 for r in self.registros if r.read), len(self.registros))
@@ -452,11 +455,9 @@ class CaveScene:
     # ── Fluxo do encontro com Iracema ─────────────────────────────────────────
 
     def _on_iracema_proposta_close(self):
-        """Após o diálogo da proposta, abre a ChoiceBox."""
-        self.choice_box.open([
-            ("Aceitar o trato",  self._iracema_aceitar),
-            ("Recusar o trato",  self._iracema_recusar),
-        ])
+        """Depois de Iracema, a Pedra apresenta os tres finais."""
+        self.sys_msg.show("A Pedra pede uma escolha final...", 150)
+        self.dialogue.open("pedra_decisao", on_close=self._open_final_choice)
 
     def _iracema_aceitar(self):
         """Player honrou o trato: +sabedoria, abre resposta da Iracema."""
@@ -470,14 +471,46 @@ class CaveScene:
         self.dialogue.open("iracema_recusa", on_close=self._on_iracema_close)
 
     def _on_iracema_close(self):
-        """Após qualquer resposta de Iracema, encaminha para o final."""
-        self.sys_msg.show("Câmara do Tesouro à frente...", 120)
+        """A Pedra ainda exige a decisao que define um dos tres finais."""
+        self.sys_msg.show("A Pedra pede uma escolha final...", 150)
+        self.dialogue.open("pedra_decisao", on_close=self._open_final_choice)
+
+    def _open_final_choice(self):
+        self.choice_box.open([
+            ("Carregar as memorias", self._final_memoria),
+            ("Tomar o tesouro", self._final_tesouro),
+            ("Partir em silencio", self._final_silencio),
+        ])
+
+    def _final_memoria(self):
+        self._forced_final = "verdadeiro"
+        self.karma.aceitou_trato_honrou()
+        self.karma.conversou_com_npc()
+        self.karma.record_progress("final_choice", "memoria")
+        self.dialogue.open("pedra_final_memoria", on_close=self._trigger_ending)
+
+    def _final_tesouro(self):
+        self._forced_final = "ruim"
+        for _ in range(3):
+            self.karma.pegou_item_armadilha()
+        self.karma.aceitou_trato_traiu()
+        self.karma.record_progress("final_choice", "tesouro")
+        self.dialogue.open("pedra_final_tesouro", on_close=self._trigger_ending)
+
+    def _final_silencio(self):
+        self._forced_final = "neutro"
+        self.karma.recusou_trato()
+        self.karma.record_progress("final_choice", "silencio")
+        self.dialogue.open("pedra_final_silencio", on_close=self._trigger_ending)
+
+    def _trigger_ending(self):
+        self.sys_msg.show("A Pedra respondeu a sua escolha.", 120)
         self._ending_triggered = True
 
     def _show_ending(self):
         """Mostra tela de final baseada no karma."""
         from scenes.ending_scene import EndingScene
-        final = self.karma.final_type
+        final = self._forced_final or self.karma.final_type
         self.scene_manager.replace(
             EndingScene(self.scene_manager, self.bus, self.karma, self.input, final)
         )

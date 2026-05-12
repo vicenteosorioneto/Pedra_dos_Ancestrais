@@ -200,7 +200,8 @@ class HDUIRenderer:
 
     def _draw_choice(self, surf, choice):
         w, h = surf.get_size()
-        rect = pygame.Rect(72, h - 430, w - 144, 112)
+        rect_h = 76 + len(choice.options) * 36
+        rect = pygame.Rect(72, h - 332 - rect_h, w - 144, rect_h)
         self._panel(surf, rect, alpha=232)
         font = self.font(26)
         prompt = self.font(24, True).render("O que voce decide?", True, MUTED)
@@ -208,7 +209,7 @@ class HDUIRenderer:
         for i, (label, _) in enumerate(choice.options):
             prefix = "> " if i == choice.selected else "  "
             color = GOLD if i == choice.selected else WHITE
-            surf.blit(font.render(prefix + label, True, color), (rect.x + 42, rect.y + 50 + i * 32))
+            surf.blit(font.render(prefix + label, True, color), (rect.x + 42, rect.y + 54 + i * 36))
 
     def _draw_pause(self, surf, hud):
         w, h = surf.get_size()

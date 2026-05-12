@@ -45,6 +45,10 @@ _NPC_NAMES: dict[str, str] = {
     "camara_0":              "[A Pedra]",
     "camara_1":              "[A Pedra]",
     "camara_2":              "[A Pedra]",
+    "pedra_decisao":         "[A Pedra]",
+    "pedra_final_memoria":   "[A Pedra]",
+    "pedra_final_tesouro":   "[A Pedra]",
+    "pedra_final_silencio":  "[A Pedra]",
     # Floresta
     "peregrino_floresta":    "Peregrino",
     "registro_floresta_0":   "[Inscrição]",
@@ -120,9 +124,10 @@ class DialogueBox:
     def close(self):
         self.active = False
         self._slide_y = 0.0
-        if self._on_close_cb:
-            self._on_close_cb()
-            self._on_close_cb = None
+        cb = self._on_close_cb
+        self._on_close_cb = None
+        if cb:
+            cb()
 
     def advance(self):
         if not self.active: return

@@ -114,6 +114,10 @@
     "Demorou menos do que eu esperava.",
     "Ou talvez mais. O tempo aqui dentro é diferente.",
     "Eu sou Iracema.",
+    "Seu avo Zequinha chegou antes de voce.",
+    "Ele nao veio buscar ouro.",
+    "Veio pedir que alguem da familia lembrasse por ele.",
+    "Foi por isso que a Pedra chamou voce ate aqui.",
     "Fui a última a entrar aqui por vontade própria.",
     "Todos os outros foram trazidos.",
     "Você não é o primeiro a procurar algo aqui dentro.",
@@ -125,7 +129,7 @@
     "você não esconde. Você carrega.",
     "Carrega pra fora, pra vila, pra quem quiser ouvir.",
     "As memórias de 37 gerações não podem morrer aqui.",
-    "Você aceita essa responsabilidade?"
+    "Zequinha encontrou a porta, mas a escolha agora e sua."
   ],
   "iracema_aceita": [
     "Sabia que você viria.",
@@ -331,5 +335,39 @@
     "'Ela está exatamente onde quis estar'.",
     "Você vai conhecê-la lá dentro.",
     "Quando conhecer, lembre deste nome gravado aqui."
+  ],
+
+  "pedra_decisao": [
+    "A Pedra se abre diante de Caio.",
+    "No centro, tres caminhos brilham ao mesmo tempo.",
+    "Memoria. Tesouro. Silencio.",
+    "A ultima lembranca de Zequinha pulsa entre os simbolos.",
+    "Iracema se cala. Agora a resposta precisa ser sua.",
+    "Escolha o que Caio leva para fora da Pedra."
+  ],
+
+  "pedra_final_memoria": [
+    "Caio toca os simbolos, nao o ouro.",
+    "Cada nome gravado encontra uma voz.",
+    "A Pedra nao entrega riqueza.",
+    "Entrega responsabilidade.",
+    "A voz de Zequinha descansa, enfim.",
+    "E Caio aceita carregar a memoria dos ancestrais."
+  ],
+
+  "pedra_final_tesouro": [
+    "Caio fecha a mao sobre o brilho do tesouro.",
+    "O ouro pesa mais do que parecia.",
+    "As inscricoes ao redor se apagam uma por uma.",
+    "A Pedra entende a escolha.",
+    "E cobra o preco de quem tentou possuir a memoria."
+  ],
+
+  "pedra_final_silencio": [
+    "Caio baixa a mao antes de tocar qualquer coisa.",
+    "Nem promessa, nem roubo.",
+    "Apenas o desejo de sair vivo.",
+    "A Pedra permite a passagem.",
+    "Mas algumas vozes continuam esperando alguem que as escute."
   ]
 }
