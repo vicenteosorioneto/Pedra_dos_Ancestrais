@@ -42,7 +42,7 @@ def _build_village_map():
         data[21][col] = 4
 
     # Plataformas flutuantes
-    def platform(cols_range, row, top=1, mid=2, base=3, height=2):
+    def platform(cols_range, row, top=1, mid=2, base=3, height=1):
         for c in cols_range:
             data[row][c] = top
             for dy in range(1, height+1):
@@ -256,12 +256,18 @@ class VillageScene:
             {"npc": MoradorMedoNPC(1030, ground_y),
              "key": "morador_medo","name": "Morador",         "talked": False},
         ]
+        self._npc_slots = [s for s in self._npc_slots if s["key"] not in {"aldeao_2", "morador_medo"}]
+        for slot in self._npc_slots:
+            if slot["key"] == "zequinha":
+                slot["npc"].x = 560
+            elif slot["key"] == "comerciante":
+                slot["npc"].x = 930
         self._zequinha_disappeared = False
         self._transitioning        = False
         self._transition_timer     = 0
 
         self.rewards = [
-            RewardPickup(330, 13 * TILE_SIZE - 12, "wisdom", "Pedra marcada: sabedoria +1"),
+            RewardPickup(430, 13 * TILE_SIZE - 12, "wisdom", "Pedra marcada: sabedoria +1"),
         ]
 
         def _village_game_win():
@@ -271,7 +277,7 @@ class VillageScene:
             self.sys_msg.show("Jogo do vento concluido: +1 vida", 140)
 
         self.minigames = [
-            MiniGameTotem(264, 14 * TILE_SIZE - 22, "Jogo do vento", _village_game_win),
+            MiniGameTotem(360, 14 * TILE_SIZE - 22, "Jogo do vento", _village_game_win),
         ]
 
         self._paused = False
@@ -408,6 +414,12 @@ class VillageScene:
         update_rewards(self.rewards, self.player, self.particles, self.sys_msg, self.karma, self.bus)
         self.particles.update()
         self.fx.update()
+        self.hud.set_objectives([
+            ("Conversas", sum(1 for s in self._npc_slots if s.get("talked")), len(self._npc_slots)),
+            ("Desafio do vento", sum(1 for t in self.minigames if t.done), len(self.minigames)),
+            ("Sabedoria", sum(1 for r in self.rewards if r.collected), len(self.rewards)),
+            ("Ir para floresta", 1 if self._transitioning else 0, 1),
+        ])
         self.hud.update()
 
         # Morte do player

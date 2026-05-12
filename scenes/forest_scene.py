@@ -40,10 +40,11 @@ def _build_forest_map():
 
     # Plataformas de pedra
     platforms = [
-        (range(5,  11), 12),
-        (range(18, 24), 10),
-        (range(30, 36), 12),
-        (range(42, 48),  9),
+        (range(5,  13), 13),
+        (range(14, 22), 12),
+        (range(23, 31), 12),
+        (range(32, 40), 11),
+        (range(41, 49), 11),
     ]
     for cols, row in platforms:
         for col in cols:
@@ -65,7 +66,7 @@ def _build_forest_map():
         if data[15][col] == 0:
             data[15][col] = 13
 
-    registro_positions = [(14, 16), (38, 16)]
+    registro_positions = [(3, 16), (35, 16)]
     return data, COLS, ROWS, registro_positions
 
 
@@ -215,17 +216,17 @@ class ForestScene:
             self.player.hp = max(1, self._prev_player.hp)
 
         # Inimigos
-        bat_y = 7 * TILE_SIZE
+        bat_y = 11 * TILE_SIZE
         self.enemies = [
             BatEnemy(200, bat_y),
-            BatEnemy(370, bat_y - 10),
-            BatEnemy(560, bat_y + 5),
+            BatEnemy(370, bat_y - 6),
+            BatEnemy(560, bat_y + 2),
         ]
 
         # NPC: Peregrino (usa sprite de ElderNPC para distinção visual)
         from entities.npc import ElderNPC
         ground_y = 16 * TILE_SIZE - ElderNPC.H
-        self._peregrino = ElderNPC(120, ground_y)
+        self._peregrino = ElderNPC(220, ground_y)
         self._peregrino_talked = False
 
         # Registros ancestrais
@@ -235,7 +236,8 @@ class ForestScene:
         ]
 
         self.rewards = [
-            RewardPickup(31 * TILE_SIZE, 12 * TILE_SIZE - 14, "wisdom", "Folha marcada: sabedoria +1"),
+            RewardPickup(30 * TILE_SIZE, 12 * TILE_SIZE - 14, "wisdom", "Folha marcada: sabedoria +1"),
+            RewardPickup(44 * TILE_SIZE, 11 * TILE_SIZE - 14, "heart", "Fruto da mata: +1 vida"),
         ]
 
         self.fx.fade_in(frames=22)
@@ -364,6 +366,12 @@ class ForestScene:
         self.sys_msg.update()
         self.particles.update()
         self.fx.update()
+        self.hud.set_objectives([
+            ("Falar com Peregrino", 1 if self._peregrino_talked else 0, 1),
+            ("Inscricoes", sum(1 for r in self.registros if r.read), len(self.registros)),
+            ("Recompensas", sum(1 for r in self.rewards if r.collected), len(self.rewards)),
+            ("Chegar as ruinas", 1 if self._transitioning else 0, 1),
+        ])
         self.hud.update()
 
         self.camera.update(

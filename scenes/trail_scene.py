@@ -53,13 +53,13 @@ def _build_trail_map():
 
     # Plataformas flutuantes com pedra de castelo
     platforms = [
-        (range(12, 18), 13),
-        (range(22, 28), 11),
-        (range(35, 41), 12),
-        (range(46, 52), 10),
-        (range(58, 64), 9),
-        (range(68, 74), 8),
-        (range(78, 84), 7),
+        (range(12, 18), 14),
+        (range(22, 28), 13),
+        (range(35, 41), 13),
+        (range(46, 52), 12),
+        (range(58, 64), 12),
+        (range(68, 74), 13),
+        (range(78, 84), 13),
     ]
     for cols, row in platforms:
         for col in cols:
@@ -67,25 +67,16 @@ def _build_trail_map():
                 data[row][col] = 8
 
     # 5 altares espalhados pela trilha
-    altar_positions = [(15, 17), (30, 17), (47, 17), (63, 17), (79, 17)]
+    altar_positions = [(12, 17), (28, 17), (44, 17), (60, 17), (76, 17)]
 
     # 3 inscrições de pedra (registros) ao longo da trilha
-    registro_positions = [(22, 17), (52, 17), (71, 17)]
+    registro_positions = [(15, 14), (49, 12), (71, 13)]
 
     # Parede de bloqueio no fim da trilha (toda a altura)
     WALL_COLS = range(86, 90)
     for col in WALL_COLS:
         for row in range(0, ROWS):
             data[row][col] = 8   # pedra_castelo — sólido
-
-    for col in WALL_COLS:
-        for row in range(0, ROWS):
-            data[row][col] = 0
-        data[17][col] = 1
-        data[18][col] = 2
-        data[19][col] = 3
-        data[20][col] = 3
-        data[21][col] = 3
 
     return data, COLS, ROWS, altar_positions, registro_positions, list(WALL_COLS)
 
@@ -326,9 +317,9 @@ class TrailScene:
         ]
 
         self.rewards = [
-            RewardPickup(24 * TILE_SIZE, 17 * TILE_SIZE - 14, "heart", "Luz da trilha: +1 vida"),
-            RewardPickup(59 * TILE_SIZE, 17 * TILE_SIZE - 14, "heart", "Luz da trilha: +1 vida"),
-            RewardPickup(80 * TILE_SIZE, 17 * TILE_SIZE - 14, "wisdom", "Fragmento ancestral: sabedoria +1"),
+            RewardPickup(16 * TILE_SIZE, 14 * TILE_SIZE - 14, "heart", "Luz da trilha: +1 vida"),
+            RewardPickup(49 * TILE_SIZE, 12 * TILE_SIZE - 14, "heart", "Luz da trilha: +1 vida"),
+            RewardPickup(82 * TILE_SIZE, 13 * TILE_SIZE - 14, "wisdom", "Fragmento ancestral: sabedoria +1"),
         ]
 
         # Tochas
@@ -504,6 +495,12 @@ class TrailScene:
         self.particles.update()
         self.fx.update()
         self.hud.set_altar_progress(self._altars_activated, total=5)
+        self.hud.set_objectives([
+            ("Altares", self._altars_activated, len(self.altars)),
+            ("Inscricoes", sum(1 for r in self.registros if r.read), len(self.registros)),
+            ("Recompensas", sum(1 for r in self.rewards if r.collected), len(self.rewards)),
+            ("Abrir entrada", 1 if self._portal_open else 0, 1),
+        ])
         self.hud.update()
 
         self.camera.update(

@@ -62,8 +62,8 @@ def _build_ruins_map():
                 if data[row][col] == 0:
                     data[row][col] = 8
 
-    registro_positions = [(17, 16), (44, 16)]
-    altar_pos = (30, 16)   # coluna, linha do chão; livre entre plataformas
+    registro_positions = [(9, 13), (49, 12)]
+    altar_pos = (32, 16)   # coluna, linha do chão; livre entre plataformas
 
     return data, COLS, ROWS, registro_positions, altar_pos
 
@@ -298,8 +298,8 @@ class RuinsScene:
         self._altar_done    = False
 
         self.rewards = [
-            RewardPickup(240, 16 * TILE_SIZE - 14, "heart", "Bencao das ruinas: +1 vida"),
-            RewardPickup(720, 16 * TILE_SIZE - 14, "heart_max", "Selo antigo: vida maxima +1"),
+            RewardPickup(11 * TILE_SIZE, 13 * TILE_SIZE - 14, "heart", "Bencao das ruinas: +1 vida"),
+            RewardPickup(49 * TILE_SIZE, 12 * TILE_SIZE - 14, "heart_max", "Selo antigo: vida maxima +1"),
         ]
 
         def _ruins_game_win():
@@ -308,7 +308,7 @@ class RuinsScene:
             self.sys_msg.show("Jogo dos simbolos concluido: sabedoria +1", 150)
 
         self.minigames = [
-            MiniGameTotem(18 * TILE_SIZE, 16 * TILE_SIZE - 22, "Jogo dos simbolos", _ruins_game_win),
+            MiniGameTotem(24 * TILE_SIZE, 16 * TILE_SIZE - 22, "Jogo dos simbolos", _ruins_game_win),
         ]
 
         # Registros
@@ -464,6 +464,12 @@ class RuinsScene:
         self.sys_msg.update()
         self.particles.update()
         self.fx.update()
+        self.hud.set_objectives([
+            ("Ativar selo", 1 if self._altar_done else 0, 1),
+            ("Inscricoes", sum(1 for r in self.registros if r.read), len(self.registros)),
+            ("Desafio", sum(1 for t in self.minigames if t.done), len(self.minigames)),
+            ("Recompensas", sum(1 for r in self.rewards if r.collected), len(self.rewards)),
+        ])
         self.hud.update()
 
         self.camera.update(

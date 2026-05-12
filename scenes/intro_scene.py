@@ -2,6 +2,7 @@
 import pygame, math, random
 from settings import SCREEN_W, SCREEN_H, PALETTE_SERTAO as P, BLACK, GOLD
 from art.fx import Particle
+from systems.audio import get_music_volume, get_sfx_volume, set_music_volume, set_sfx_volume
 
 def _draw_pedra_castelo_large(surf, cx, cy):
     rock_mid  = P["rock_mid"]; rock_dark = P["rock_dark"]; rock_light= P["rock_light"]
@@ -41,6 +42,7 @@ class IntroScene:
         self.time = 0; self.particles = []; self._initialized = False
         self._star_rng = random.Random(7); self._stars = []
         self._sel = 0; self._screen = "main"   # main|controls|options
+        self._opt_sel = 0
         self._sel_cd = 0
         self._fonts = {}
 
@@ -70,6 +72,19 @@ class IntroScene:
         if event.type != pygame.KEYDOWN: return
         k = event.key
 
+        if self._screen == "options":
+            if k in (pygame.K_ESCAPE, pygame.K_x, pygame.K_k):
+                self._screen = "main"
+            elif k in (pygame.K_UP, pygame.K_w):
+                self._opt_sel = (self._opt_sel - 1) % 2
+            elif k in (pygame.K_DOWN, pygame.K_s):
+                self._opt_sel = (self._opt_sel + 1) % 2
+            elif k in (pygame.K_LEFT, pygame.K_a):
+                self._adjust_option(-0.1)
+            elif k in (pygame.K_RIGHT, pygame.K_d, pygame.K_RETURN, pygame.K_SPACE):
+                self._adjust_option(0.1)
+            return
+
         if self._screen != "main":
             if k in (pygame.K_ESCAPE, pygame.K_x, pygame.K_k):
                 self._screen = "main"
@@ -91,6 +106,12 @@ class IntroScene:
     def _start_game(self):
         from scenes.village_scene import VillageScene
         self.scene_manager.replace(VillageScene(self.scene_manager, self.bus, self.karma, self.input))
+
+    def _adjust_option(self, delta):
+        if self._opt_sel == 0:
+            set_music_volume(get_music_volume() + delta)
+        else:
+            set_sfx_volume(get_sfx_volume() + delta)
 
     def update(self):
         self._init()
@@ -194,14 +215,39 @@ class IntroScene:
         back=self._f(9).render("[ESC / X] Voltar",True,(90,76,44))
         surf.blit(back,((W-back.get_width())//2,H//2+70))
 
-    def _draw_options(self, surf):
+    def _draw_options_legacy(self, surf):
         W,H = SCREEN_W,SCREEN_H
         self._draw_submenu_bg(surf,"OPÇÕES")
         fi=self._f(10)
         for i,txt in enumerate(["Volume: ████████░░","Velocidade do texto: Normal"]):
             t=fi.render(txt,True,(180,160,100))
             surf.blit(t,((W-t.get_width())//2,H//2-20+i*20))
-        hint=fi.render("(em breve)",True,(80,68,42))
+        hint=fi.render("",True,(80,68,42))
         surf.blit(hint,((W-hint.get_width())//2,H//2+40))
+        back=self._f(9).render("[ESC / X] Voltar",True,(90,76,44))
+        surf.blit(back,((W-back.get_width())//2,H//2+70))
+
+    def _draw_options(self, surf):
+        W,H = SCREEN_W,SCREEN_H
+        self._draw_submenu_bg(surf,"OPCOES")
+        fi=self._f(10)
+        rows = [
+            ("Musica", get_music_volume()),
+            ("Efeitos", get_sfx_volume()),
+        ]
+        for i,(label,value) in enumerate(rows):
+            y=H//2-28+i*28
+            selected = i == self._opt_sel
+            col = GOLD if selected else (180,160,100)
+            if selected:
+                pulse = int(abs(math.sin(self.time*0.1))*3)
+                surf.blit(fi.render(">",True,GOLD),(W//2-102+pulse,y))
+            filled = int(round(value * 10))
+            bar = "#" * filled + "-" * (10 - filled)
+            txt = f"{label}: [{bar}] {int(round(value * 100)):3d}%"
+            t=fi.render(txt,True,col)
+            surf.blit(t,((W-t.get_width())//2,y))
+        help_txt=fi.render("A/D ou setas ajusta",True,(120,100,58))
+        surf.blit(help_txt,((W-help_txt.get_width())//2,H//2+36))
         back=self._f(9).render("[ESC / X] Voltar",True,(90,76,44))
         surf.blit(back,((W-back.get_width())//2,H//2+70))

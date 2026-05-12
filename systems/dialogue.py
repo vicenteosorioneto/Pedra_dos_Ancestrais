@@ -106,8 +106,8 @@ class DialogueBox:
         self._init_fonts()
         self.active       = True
         self.lines        = _loader.get(npc_key)
-        if npc_key in SHORT_DIALOGUE_LINES and len(self.lines) > 4:
-            self.lines = self.lines[:4]
+        if npc_key in SHORT_DIALOGUE_LINES and len(self.lines) > 3:
+            self.lines = self.lines[:3]
         self.npc_name     = _NPC_NAMES.get(npc_key, npc_key.replace("_"," ").title())
         self.avatar_surf  = avatar_surf
         self.current_line = 0

@@ -58,6 +58,7 @@ class HUD:
         self.interaction_timer = 0
         self._altar_count = -1
         self._altar_total = 3
+        self._objectives = []
         self._scene_label = ""
         self._damage_timer = 0
         self._prev_hp = -1
@@ -99,6 +100,9 @@ class HUD:
 
     def clear_altar_progress(self):
         self._altar_count = -1
+
+    def set_objectives(self, objectives):
+        self._objectives = list(objectives or [])
 
     def show_interaction(self, text):
         self.interaction_text  = text
@@ -164,6 +168,7 @@ class HUD:
         self._init_fonts()
         self._draw_hp_area(surf, player_hp, player_max_hp)
         self._draw_altar_counter(surf)
+        self._draw_objectives(surf)
         self._draw_scene_label(surf)
         self._draw_interaction(surf)
         for p in self.particles:
@@ -206,7 +211,7 @@ class HUD:
         done = (n >= total)
         bx = self.HP_BOX_X
         by = self.HP_BOX_Y + self.HP_BOX_H + 3
-        bw = self.HP_BOX_W
+        bw = max(self.HP_BOX_W, 24 + total * 13 + self._small_font.render(f"{n}/{total}", True, GOLD).get_width())
         bh = 16
 
         bg = pygame.Surface((bw, bh))
@@ -218,9 +223,10 @@ class HUD:
         pygame.draw.rect(surf, border_col, (bx, by, bw, bh), 1)
 
         # Triângulos (altares)
+        spacing = 12 if total > 3 else 16
         for i in range(total):
             col = (220, 180, 60) if i < n else (40, 32, 15)
-            tx = bx + 8 + i * 16
+            tx = bx + 7 + i * spacing
             ty = by + 3
             pygame.draw.polygon(surf, col, [(tx+6, ty), (tx+1, ty+9), (tx+11, ty+9)])
             pygame.draw.polygon(surf, (160, 130, 40) if i < n else (25,20,8),
@@ -229,6 +235,42 @@ class HUD:
         label = self._small_font.render(f"{n}/{total}", True,
                                         (100,220,120) if done else (180,160,100))
         surf.blit(label, (bx+bw-label.get_width()-4, by+3))
+
+    def _draw_objectives(self, surf):
+        if not self._objectives:
+            return
+
+        rows = []
+        for item in self._objectives:
+            if len(item) == 2:
+                label, done = item
+                text = f"{label} ({1 if done else 0}/1)"
+                complete = bool(done)
+            else:
+                label, count, total = item[:3]
+                count = max(0, min(int(count), int(total)))
+                complete = count >= int(total)
+                text = f"{label} ({count}/{total})"
+            rows.append((text, complete))
+
+        bx = self.HP_BOX_X
+        by = self.HP_BOX_Y + self.HP_BOX_H + 4
+        if self._altar_count >= 0:
+            by += 18
+
+        width = max(132, max(self._small_font.render(t, True, GOLD).get_width() for t, _ in rows) + 14)
+        height = 14 + len(rows) * 12
+        bg = pygame.Surface((width, height), pygame.SRCALPHA)
+        bg.fill((0, 0, 0, 150))
+        surf.blit(bg, (bx, by))
+        pygame.draw.rect(surf, (55, 44, 20), (bx, by, width, height), 1)
+
+        title = self._small_font.render("OBJETIVOS", True, GOLD)
+        surf.blit(title, (bx + 6, by + 3))
+        for i, (text, complete) in enumerate(rows):
+            col = (100, 220, 120) if complete else (220, 210, 180)
+            ts = self._small_font.render(text, True, col)
+            surf.blit(ts, (bx + 6, by + 15 + i * 12))
 
     def _draw_scene_label(self, surf):
         if not self._scene_label: return

@@ -119,7 +119,7 @@ class CriancaNPC(NPC):
         sprite = get_npc_villager(0, self.facing)
         # Escala reduzida para parecer criança
         small = pygame.transform.scale(sprite, (self.W + 3, self.H + 4))
-        surf.blit(small, (int(self.x - cam_x) - 1, int(self.y - cam_y) + 8))
+        surf.blit(small, (int(self.x - cam_x) - 1, int(self.y - cam_y) - 4))
 
     def get_avatar(self) -> pygame.Surface:
         return pygame.transform.scale(get_npc_villager(0, 1), (self.W + 3, self.H + 4))
