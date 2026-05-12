@@ -70,10 +70,10 @@ SHORT_DIALOGUE_LINES = {
 
 
 class DialogueBox:
-    BOX_H     = 112
+    BOX_H     = 94
     BOX_Y_BASE = SCREEN_H - BOX_H - 4
-    BOX_PAD   = 14
-    AVATAR_W  = 64
+    BOX_PAD   = 12
+    AVATAR_W  = 48
     CHAR_SPEED = 2
 
     def __init__(self):
@@ -94,13 +94,13 @@ class DialogueBox:
     def _init_fonts(self):
         if self._font is None:
             try:
-                self._font      = pygame.font.SysFont("Courier New", 17)
-                self._name_font = pygame.font.SysFont("Courier New", 18, bold=True)
-                self._small_font= pygame.font.SysFont("Courier New", 13)
+                self._font      = pygame.font.SysFont("Courier New", 12)
+                self._name_font = pygame.font.SysFont("Courier New", 13, bold=True)
+                self._small_font= pygame.font.SysFont("Courier New", 9)
             except Exception:
-                self._font      = pygame.font.Font(None, 21)
-                self._name_font = pygame.font.Font(None, 23)
-                self._small_font= pygame.font.Font(None, 17)
+                self._font      = pygame.font.Font(None, 16)
+                self._name_font = pygame.font.Font(None, 17)
+                self._small_font= pygame.font.Font(None, 13)
 
     def open(self, npc_key, avatar_surf=None, on_close=None):
         self._init_fonts()
@@ -156,8 +156,8 @@ class DialogueBox:
 
         slide_offset = int(self._slide_y * (self.BOX_H + 10))
         by = self.BOX_Y_BASE + slide_offset
-        bx = 18
-        bw = SCREEN_W - 36
+        bx = 28
+        bw = SCREEN_W - 56
         bh = self.BOX_H
 
         # Fundo com gradiente manual
@@ -184,9 +184,9 @@ class DialogueBox:
         tx = bx + self.BOX_PAD
         if self.avatar_surf:
             av = pygame.transform.scale(self.avatar_surf, (self.AVATAR_W, self.AVATAR_W))
-            pygame.draw.rect(surf, (40,32,12), (tx-1, by+20, self.AVATAR_W+2, self.AVATAR_W+2))
-            surf.blit(av, (tx, by+21))
-            pygame.draw.rect(surf, GOLD, (tx, by+21, self.AVATAR_W, self.AVATAR_W), 1)
+            pygame.draw.rect(surf, (40,32,12), (tx-1, by+18, self.AVATAR_W+2, self.AVATAR_W+2))
+            surf.blit(av, (tx, by+19))
+            pygame.draw.rect(surf, GOLD, (tx, by+19, self.AVATAR_W, self.AVATAR_W), 1)
             tx = tx + self.AVATAR_W + self.BOX_PAD
 
         # Nome
@@ -194,19 +194,19 @@ class DialogueBox:
             is_iracema = "iracema" in self.npc_name.lower()
             name_col = (80, 160, 220) if is_iracema else GOLD
             ns = self._name_font.render(self.npc_name, True, name_col)
-            surf.blit(ns, (tx, by + 13))
+            surf.blit(ns, (tx, by + 12))
             pygame.draw.line(surf, (45,36,15),
-                             (tx, by+34), (tx + ns.get_width() + 24, by+34), 1)
-            text_y = by + 42
+                             (tx, by+29), (tx + ns.get_width() + 24, by+29), 1)
+            text_y = by + 35
         else:
-            text_y = by + 24
+            text_y = by + 20
 
         # Texto atual — SEM linha anterior
         line = self.lines[self.current_line]
         visible = line[:int(self.char_index)]
         full    = self.char_index >= len(line)
 
-        # Quebra de linha por largura real, adaptada para tela 960x540.
+        # Quebra de linha por largura real, adaptada para a superficie interna.
         max_w = bx + bw - tx - 58
         words = visible.split(' ')
         lines_out = []
@@ -254,7 +254,7 @@ class DialogueBox:
 
 
 class ChoiceBox:
-    BOX_H = 82
+    BOX_H = 68
     BOX_Y = SCREEN_H - DialogueBox.BOX_H - 10 - BOX_H
 
     def __init__(self):
@@ -266,9 +266,9 @@ class ChoiceBox:
     def _init_font(self):
         if self._font is None:
             try:
-                self._font = pygame.font.SysFont("Courier New", 16)
+                self._font = pygame.font.SysFont("Courier New", 12)
             except Exception:
-                self._font = pygame.font.Font(None, 20)
+                self._font = pygame.font.Font(None, 16)
 
     def open(self, options):
         self._init_font()
@@ -300,7 +300,7 @@ class ChoiceBox:
     def draw(self, surf):
         if not self.active: return
         self._init_font()
-        bx, by, bw, bh = 18, self.BOX_Y, SCREEN_W-36, self.BOX_H
+        bx, by, bw, bh = 28, self.BOX_Y, SCREEN_W-56, self.BOX_H
 
         box = pygame.Surface((bw, bh))
         box.set_alpha(220)
@@ -316,7 +316,7 @@ class ChoiceBox:
             cursor = "▶ " if i == self.selected else "  "
             color  = GOLD if i == self.selected else (160,150,130)
             text   = self._font.render(f"{cursor}{label}", True, color)
-            surf.blit(text, (bx+18, by+30+i*20))
+            surf.blit(text, (bx+18, by+26+i*17))
 
         hint = self._font.render("↑↓ navegar   X confirmar", True, (100,90,70))
         surf.blit(hint, (bx+bw-hint.get_width()-8, by+bh-12))
@@ -332,9 +332,9 @@ class SystemMessage:
     def _init_font(self):
         if self._font is None:
             try:
-                self._font = pygame.font.SysFont("Courier New", 16, bold=True)
+                self._font = pygame.font.SysFont("Courier New", 11, bold=True)
             except Exception:
-                self._font = pygame.font.Font(None, 20)
+                self._font = pygame.font.Font(None, 15)
 
     def show(self, text, duration=120):
         self._init_font()

@@ -7,7 +7,7 @@ Jogo 2D de plataforma com elementos leves de RPG, ambientado no sertão nordesti
 - **Gênero:** plataforma 2D narrativo com RPG leve
 - **Plataforma:** PC, via Python e Pygame
 - **Resolução interna:** 640 x 360
-- **Janela:** 1280 x 720, com upscale 2x
+- **Tela:** fullscreen 1920 x 1080, com upscale 3x
 - **Arte:** pixel art procedural gerada em código
 - **Progressão:** atos, exploração, combate simples, diálogos e sistema de karma invisível
 
@@ -52,7 +52,18 @@ Execute o jogo:
 python main.py
 ```
 
-Uma janela 1280 x 720 será aberta com a tela de título. Pressione uma tecla para começar.
+O jogo abre em tela cheia 1920 x 1080 com a tela de título. Pressione uma tecla para começar.
+
+## Build Windows (.exe)
+
+Com o ambiente virtual ativo e as dependências instaladas:
+
+```bash
+python -m pip install pyinstaller
+python -m PyInstaller --noconfirm --clean --onefile --windowed --name PedraDosAncestrais --add-data="content:content" main.py
+```
+
+O executável jogável fica em `dist/PedraDosAncestrais.exe`.
 
 ## Início Rápido
 
@@ -146,10 +157,10 @@ pedra_dos_ancestrais/
 Superfície interna 640 x 360
         |
         v
-Upscale 2x
+Upscale 3x
         |
         v
-Janela 1280 x 720
+Fullscreen 1920 x 1080
 ```
 
 Todos os sistemas desenham na superfície interna. No fim de cada frame, `core/game.py` amplia a imagem para a janela final.

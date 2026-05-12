@@ -505,6 +505,9 @@ class TrailScene:
             ("Recompensas", sum(1 for r in self.rewards if r.collected), len(self.rewards)),
             ("Abrir entrada", 1 if self._portal_open else 0, 1),
         ])
+        self.karma.record_progress("trail_altars", self._altars_activated, len(self.altars))
+        self.karma.record_progress("trail_records", sum(1 for r in self.registros if r.read), len(self.registros))
+        self.karma.add_reward_progress(sum(1 for r in self.rewards if r.collected), len(self.rewards))
         self.hud.update()
 
         self.camera.update(

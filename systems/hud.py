@@ -43,8 +43,8 @@ def _draw_heart(surf, x, y, full=True):
 
 
 class HUD:
-    HP_BOX_X = 16
-    HP_BOX_Y = 16
+    HP_BOX_X = 32
+    HP_BOX_Y = 20
     HP_BOX_W = 96
     HP_BOX_H = 30
 
@@ -76,13 +76,22 @@ class HUD:
     def _init_fonts(self):
         if self._font is None:
             try:
-                self._font       = pygame.font.SysFont("Courier New", 16, bold=True)
-                self._small_font = pygame.font.SysFont("Courier New", 14)
-                self._big_font   = pygame.font.SysFont("Courier New", 28, bold=True)
+                self._font       = pygame.font.SysFont("Courier New", 12, bold=True)
+                self._small_font = pygame.font.SysFont("Courier New", 10)
+                self._big_font   = pygame.font.SysFont("Courier New", 22, bold=True)
             except Exception:
-                self._font       = pygame.font.Font(None, 20)
-                self._small_font = pygame.font.Font(None, 18)
-                self._big_font   = pygame.font.Font(None, 34)
+                self._font       = pygame.font.Font(None, 16)
+                self._small_font = pygame.font.Font(None, 14)
+                self._big_font   = pygame.font.Font(None, 28)
+
+    def _fit_text(self, text, max_width):
+        """Shortens HUD labels so they stay inside fixed panels."""
+        if self._small_font.size(text)[0] <= max_width:
+            return text
+        suffix = "..."
+        while text and self._small_font.size(text + suffix)[0] > max_width:
+            text = text[:-1]
+        return (text + suffix) if text else suffix
 
     # ── API pública ──────────────────────────────────────────────────────────
 
@@ -260,28 +269,29 @@ class HUD:
         if self._altar_count >= 0:
             by += 28
 
-        width = max(210, max(self._small_font.render(t, True, GOLD).get_width() for t, _ in rows) + 18)
+        width = min(180, max(142, max(self._small_font.render(t, True, GOLD).get_width() for t, _ in rows) + 16))
         row_h = self._small_font.get_height() + 3
-        height = 22 + len(rows) * row_h
+        height = 20 + len(rows) * row_h
         bg = pygame.Surface((width, height), pygame.SRCALPHA)
         bg.fill((0, 0, 0, 150))
         surf.blit(bg, (bx, by))
         pygame.draw.rect(surf, (55, 44, 20), (bx, by, width, height), 1)
 
         title = self._small_font.render("OBJETIVOS", True, GOLD)
-        surf.blit(title, (bx + 8, by + 4))
+        surf.blit(title, (bx + 7, by + 4))
         for i, (text, complete) in enumerate(rows):
             col = (100, 220, 120) if complete else (220, 210, 180)
-            ts = self._small_font.render(text, True, col)
-            surf.blit(ts, (bx + 8, by + 23 + i * row_h))
+            fitted = self._fit_text(text, width - 14)
+            ts = self._small_font.render(fitted, True, col)
+            surf.blit(ts, (bx + 7, by + 20 + i * row_h))
 
     def _draw_scene_label(self, surf):
         if not self._scene_label: return
         label = self._small_font.render(self._scene_label, True, (180, 160, 120))
         lw = label.get_width()
         lh = label.get_height()
-        bx = SCREEN_W - lw - 10
-        by = 6
+        bx = SCREEN_W - lw - 18
+        by = 12
         bg = pygame.Surface((lw+8, lh+4), pygame.SRCALPHA)
         bg.fill((0, 0, 0, 120))
         surf.blit(bg, (bx-4, by-2))
@@ -296,14 +306,14 @@ class HUD:
         text = f"[X] {self.interaction_text}"
         ts = self._small_font.render(text, True, col)
         pw = ts.get_width() + 16
-        ph = 14
+        ph = self._small_font.get_height() + 8
         bx = (SCREEN_W - pw) // 2
-        by = SCREEN_H - 148
+        by = SCREEN_H - 132
         bg = pygame.Surface((pw, ph), pygame.SRCALPHA)
         bg.fill((0, 0, 0, 160))
         surf.blit(bg, (bx, by))
         pygame.draw.rect(surf, col, (bx, by, pw, ph), 1)
-        surf.blit(ts, (bx+8, by+2))
+        surf.blit(ts, (bx+8, by+4))
 
     def _draw_death(self, surf):
         t = self._death_timer
@@ -350,7 +360,7 @@ class HUD:
 
     def _draw_controls_panel(self, surf):
         """Painel de controles exibido dentro da tela de morte."""
-        pw, ph = 440, 270
+        pw, ph = 360, 230
         px = (SCREEN_W - pw) // 2
         py = (SCREEN_H - ph) // 2
 
@@ -380,9 +390,9 @@ class HUD:
         for i, (key, action) in enumerate(controles):
             k_surf = fs.render(key, True, col_key)
             a_surf = fs.render(action, True, col_val)
-            y = py + 62 + i * 28
+            y = py + 56 + i * 23
             surf.blit(k_surf, (px + 28, y))
-            surf.blit(a_surf, (px + 235, y))
+            surf.blit(a_surf, (px + 200, y))
 
         pygame.draw.line(surf, (60, 48, 24), (px+20, py+ph-34), (px+pw-20, py+ph-34), 1)
         back = fs.render("[C] ou [ESC]  Voltar", True, (140, 120, 80))
@@ -395,7 +405,7 @@ class HUD:
         ov.fill((0, 0, 0, 175))
         surf.blit(ov, (0, 0))
 
-        pw, ph = 320, 170
+        pw, ph = 280, 145
         px = (W-pw)//2
         py = (H-ph)//2
 

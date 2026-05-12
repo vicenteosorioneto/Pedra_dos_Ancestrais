@@ -376,6 +376,8 @@ class ForestScene:
             ("Recompensas", sum(1 for r in self.rewards if r.collected), len(self.rewards)),
             ("Chegar as ruinas", 1 if self._transitioning else 0, 1),
         ])
+        self.karma.record_progress("forest_records", sum(1 for r in self.registros if r.read), len(self.registros))
+        self.karma.add_reward_progress(sum(1 for r in self.rewards if r.collected), len(self.rewards))
         self.hud.update()
 
         self.camera.update(

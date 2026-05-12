@@ -424,6 +424,8 @@ class VillageScene:
             ("Sabedoria", sum(1 for r in self.rewards if r.collected), len(self.rewards)),
             ("Ir para floresta", 1 if self._transitioning else 0, 1),
         ])
+        self.karma.record_progress("village_talks", sum(1 for s in self._npc_slots if s.get("talked")), len(self._npc_slots))
+        self.karma.add_reward_progress(sum(1 for r in self.rewards if r.collected), len(self.rewards))
         self.hud.update()
 
         # Morte do player

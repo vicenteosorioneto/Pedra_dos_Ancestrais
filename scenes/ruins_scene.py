@@ -474,6 +474,9 @@ class RuinsScene:
             ("Desafio", sum(1 for t in self.minigames if t.done), len(self.minigames)),
             ("Recompensas", sum(1 for r in self.rewards if r.collected), len(self.rewards)),
         ])
+        self.karma.record_progress("ruins_seals", 1 if self._altar_done else 0, 1)
+        self.karma.record_progress("ruins_records", sum(1 for r in self.registros if r.read), len(self.registros))
+        self.karma.add_reward_progress(sum(1 for r in self.rewards if r.collected), len(self.rewards))
         self.hud.update()
 
         self.camera.update(

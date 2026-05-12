@@ -40,10 +40,11 @@ class AudioManager:
 
         self._sounds = {
             "village": self._tone_theme((196, 247, 294), (294, 330, 247, 220, 196), 9.6, volume=0.11),
-            "forest": self._tone_theme((147, 196, 220), (220, 247, 196, 165, 147), 10.8, volume=0.10),
-            "trail": self._tone_theme((98, 147, 196), (196, 220, 247, 196, 147, 123), 12.0, volume=0.11),
-            "cave": self._tone_theme((82, 123, 165), (165, 147, 123, 110, 98), 12.4, volume=0.11),
-            "ending": self._tone_theme((147, 196, 247), (247, 294, 330, 294, 247), 11.2, volume=0.09),
+            "forest": self._tone_theme((131, 196, 262), (262, 330, 294, 220, 196, 165), 11.4, volume=0.10, texture="leaves"),
+            "ruins": self._tone_theme((110, 147, 220), (220, 196, 165, 147, 220, 294), 12.6, volume=0.10, texture="stone"),
+            "trail": self._tone_theme((98, 147, 196), (196, 220, 247, 196, 147, 123), 13.2, volume=0.11, texture="night"),
+            "cave": self._tone_theme((73, 110, 165), (165, 147, 110, 98, 82), 13.8, volume=0.11, texture="cave"),
+            "ending": self._tone_theme((147, 196, 247), (247, 294, 330, 392, 330, 294), 12.0, volume=0.09, texture="light"),
             "pause": self._tone_theme((110, 165, 220), (220, 165, 147, 165), 8.0, volume=0.07),
             "pickup": self._tone_sweep(520, 880, 0.18, volume=0.35),
             "damage": self._tone_sweep(180, 80, 0.16, volume=0.35),
@@ -81,7 +82,9 @@ class AudioManager:
         name = scene.__class__.__name__.lower()
         if "forest" in name:
             return "forest"
-        if "trail" in name or "ruins" in name:
+        if "ruins" in name:
+            return "ruins"
+        if "trail" in name:
             return "trail"
         if "cave" in name:
             return "cave"
@@ -105,7 +108,7 @@ class AudioManager:
             samples.append(int(sample * env * volume * 32767))
         return pygame.mixer.Sound(buffer=samples.tobytes())
 
-    def _tone_theme(self, chord_freqs, melody_freqs, seconds, volume=0.2):
+    def _tone_theme(self, chord_freqs, melody_freqs, seconds, volume=0.2, texture=""):
         rate = 22050
         samples = array("h")
         total = int(rate * seconds)
@@ -128,6 +131,16 @@ class AudioManager:
             sample += math.sin(phase) * 0.34 * pluck_env
 
             breath = 0.03 * math.sin(2 * math.pi * 32 * t) * math.sin(t * 0.9)
+            if texture == "leaves":
+                breath += 0.025 * math.sin(2 * math.pi * 7 * t) * math.sin(2 * math.pi * 53 * t)
+            elif texture == "stone":
+                breath += 0.035 * math.sin(2 * math.pi * 41 * t) * math.sin(t * 0.45)
+            elif texture == "night":
+                breath += 0.02 * math.sin(2 * math.pi * 880 * t) * (math.sin(t * 1.7) > 0.96)
+            elif texture == "cave":
+                breath += 0.045 * math.sin(2 * math.pi * 24 * t) + 0.018 * math.sin(2 * math.pi * 310 * t)
+            elif texture == "light":
+                breath += 0.02 * math.sin(2 * math.pi * 660 * t) * math.sin(t * 0.35)
             sample = (sample + breath) / 1.75
             samples.append(int(sample * fade * slow * volume * 32767))
         return pygame.mixer.Sound(buffer=samples.tobytes())

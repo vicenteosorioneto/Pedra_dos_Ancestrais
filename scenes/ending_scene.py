@@ -44,10 +44,10 @@ class EndingScene:
 
     def _init_fonts(self):
         try:
-            self._font_title = pygame.font.SysFont("Courier New", 18, bold=True)
-            self._font_body  = pygame.font.SysFont("Courier New", 11)
+            self._font_title = pygame.font.SysFont("Courier New", 16, bold=True)
+            self._font_body  = pygame.font.SysFont("Courier New", 10)
         except Exception:
-            self._font_title = pygame.font.Font(None, 22)
+            self._font_title = pygame.font.Font(None, 21)
             self._font_body  = pygame.font.Font(None, 14)
 
     # ── Conteúdo por tipo de final ─────────────────────────────────────────────
@@ -95,6 +95,30 @@ class EndingScene:
             ],
             (160, 150, 200),
         )
+
+    def _get_journey_lines(self):
+        j = self.karma.get_journey_summary()
+        lines = []
+        if j.village_talks_total:
+            lines.append(f"Vila: {j.village_talks}/{j.village_talks_total} conversas lembradas")
+        records_done = j.forest_records + j.ruins_records + j.trail_records + j.cave_records
+        records_total = j.forest_records_total + j.ruins_records_total + j.trail_records_total + j.cave_records_total
+        if records_total:
+            lines.append(f"Inscricoes lidas: {records_done}/{records_total}")
+        seals_done = j.ruins_seals + j.trail_altars
+        seals_total = j.ruins_seals_total + j.trail_altars_total
+        if seals_total:
+            lines.append(f"Selos e altares: {seals_done}/{seals_total}")
+        if j.rewards_total:
+            lines.append(f"Bencaos recolhidas: {j.rewards}/{j.rewards_total}")
+        lines.append("Guardiao liberto: sim" if j.guardian_freed else "Guardiao liberto: nao")
+        choice = {
+            "honrou": "Iracema: trato aceito e honrado",
+            "traiu": "Iracema: trato quebrado",
+            "recusou": "Iracema: trato recusado",
+        }.get(j.iracema_choice, "Iracema: sem resposta")
+        lines.append(choice)
+        return lines
 
     # ── Eventos ────────────────────────────────────────────────────────────────
 
@@ -148,8 +172,8 @@ class EndingScene:
         title  = self._font_title.render(title_text, True, title_col)
         shadow = self._font_title.render(title_text, True, (20, 10, 5))
         tx = (SCREEN_W - title.get_width()) // 2
-        surf.blit(shadow, (tx + 2, 32))
-        surf.blit(title,  (tx, 30))
+        surf.blit(shadow, (tx + 2, 28))
+        surf.blit(title,  (tx, 26))
 
         # Separador dourado
         pygame.draw.line(surf, title_col,
@@ -166,7 +190,22 @@ class EndingScene:
             ls = self._font_body.render(line, True, (200, 190, 170))
             ls.set_alpha(alpha)
             lx = (SCREEN_W - ls.get_width()) // 2
-            surf.blit(ls, (lx, 68 + i * 16))
+            surf.blit(ls, (lx, 66 + i * 14))
+
+        journey_lines = self._get_journey_lines()
+        panel_w = 320
+        panel_h = 22 + len(journey_lines) * 13
+        panel_x = (SCREEN_W - panel_w) // 2
+        panel_y = 190
+        panel = pygame.Surface((panel_w, panel_h), pygame.SRCALPHA)
+        panel.fill((0, 0, 0, 130))
+        surf.blit(panel, (panel_x, panel_y))
+        pygame.draw.rect(surf, title_col, (panel_x, panel_y, panel_w, panel_h), 1)
+        header = self._font_body.render("O que a Pedra reconheceu", True, title_col)
+        surf.blit(header, ((SCREEN_W - header.get_width()) // 2, panel_y + 5))
+        for i, line in enumerate(journey_lines):
+            ls = self._font_body.render(line, True, (205, 195, 170))
+            surf.blit(ls, (panel_x + 12, panel_y + 23 + i * 13))
 
         # Resumo de karma (atributos do dataclass, não dict)
         summ = self.karma.get_summary()
@@ -177,7 +216,7 @@ class EndingScene:
         ]
         for i, stat in enumerate(stats):
             ss = self._font_body.render(stat, True, (160, 140, 100))
-            surf.blit(ss, (20, SCREEN_H - 52 + i * 14))
+            surf.blit(ss, (26, SCREEN_H - 52 + i * 13))
 
         # Pressione ENTER (piscante)
         if self._blink:

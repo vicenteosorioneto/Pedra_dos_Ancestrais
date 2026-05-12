@@ -5,7 +5,7 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from systems.karma import KarmaSystem, KarmaSummary
+from systems.karma import KarmaSystem, KarmaSummary, JourneySummary
 from core.event_bus import EventBus
 from shared.enums import GameEvent
 
@@ -104,3 +104,25 @@ class TestKarmaIracema:
         k.aceitou_trato_honrou()
         k.recusou_trato()
         assert k.divida_iracema is None
+
+
+class TestJourneySummary:
+    def test_progress_recaps_story_actions(self):
+        k = KarmaSystem()
+        k.record_progress("village_talks", 3, 3)
+        k.record_progress("trail_altars", 5, 5)
+        k.record_progress("cave_records", 2, 3)
+        k.add_reward_progress(2, 4)
+        k.add_reward_progress(1, 2)
+        k.ajudou_espirito()
+        k.aceitou_trato_honrou()
+
+        s = k.get_journey_summary()
+        assert isinstance(s, JourneySummary)
+        assert s.village_talks == 3
+        assert s.trail_altars == 5
+        assert s.cave_records == 2
+        assert s.rewards == 2
+        assert s.rewards_total == 4
+        assert s.guardian_freed is True
+        assert s.iracema_choice == "honrou"

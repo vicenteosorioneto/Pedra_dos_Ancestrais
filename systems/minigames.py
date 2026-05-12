@@ -61,17 +61,17 @@ class RuneMiniGame:
             return
         if self._font is None:
             try:
-                self._font = pygame.font.SysFont("Courier New", 16, bold=True)
-                self._big_font = pygame.font.SysFont("Courier New", 24, bold=True)
+                self._font = pygame.font.SysFont("Courier New", 11, bold=True)
+                self._big_font = pygame.font.SysFont("Courier New", 16, bold=True)
             except Exception:
-                self._font = pygame.font.Font(None, 20)
-                self._big_font = pygame.font.Font(None, 28)
+                self._font = pygame.font.Font(None, 15)
+                self._big_font = pygame.font.Font(None, 20)
 
         ov = pygame.Surface((SCREEN_W, SCREEN_H), pygame.SRCALPHA)
         ov.fill((0, 0, 0, 165))
         surf.blit(ov, (0, 0))
 
-        pw, ph = 390, 160
+        pw, ph = 300, 125
         px = (SCREEN_W - pw) // 2
         py = (SCREEN_H - ph) // 2
         panel = pygame.Surface((pw, ph), pygame.SRCALPHA)
@@ -80,23 +80,23 @@ class RuneMiniGame:
         pygame.draw.rect(surf, GOLD, (px, py, pw, ph), 1)
 
         title = self._big_font.render(self.title, True, GOLD)
-        surf.blit(title, ((SCREEN_W - title.get_width()) // 2, py + 16))
+        surf.blit(title, ((SCREEN_W - title.get_width()) // 2, py + 12))
 
         for i, (_, label) in enumerate(KEY_SEQUENCE):
-            bx = px + 92 + i * 72
-            by = py + 64
+            bx = px + 68 + i * 56
+            by = py + 48
             active = i == self.index
             col = (230, 205, 80) if active else (80, 70, 45)
-            pygame.draw.rect(surf, col, (bx, by, 42, 36), 1)
+            pygame.draw.rect(surf, col, (bx, by, 34, 30), 1)
             txt = self._big_font.render(label, True, col)
-            surf.blit(txt, (bx + (42 - txt.get_width()) // 2, by + 4))
+            surf.blit(txt, (bx + (34 - txt.get_width()) // 2, by + 4))
 
         remaining = max(0, self.timer / 240)
-        pygame.draw.rect(surf, (45, 35, 20), (px + 40, py + 116, pw - 80, 8))
-        pygame.draw.rect(surf, (180, 120, 45), (px + 40, py + 116, int((pw - 80) * remaining), 8))
+        pygame.draw.rect(surf, (45, 35, 20), (px + 34, py + 90, pw - 68, 7))
+        pygame.draw.rect(surf, (180, 120, 45), (px + 34, py + 90, int((pw - 68) * remaining), 7))
 
         hint = self._font.render("Repita a sequencia antes do tempo acabar", True, (170, 150, 110))
-        surf.blit(hint, ((SCREEN_W - hint.get_width()) // 2, py + 132))
+        surf.blit(hint, ((SCREEN_W - hint.get_width()) // 2, py + 104))
 
 
 class MiniGameTotem:

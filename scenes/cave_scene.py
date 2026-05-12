@@ -395,6 +395,14 @@ class CaveScene:
         self.sys_msg.update()
         self.particles.update()
         self.fx.update()
+        self.hud.set_objectives([
+            ("Memorias", sum(1 for r in self.registros if r.read), len(self.registros)),
+            ("Guardiao", 1 if self.guardian.defeated else 0, 1),
+            ("Iracema", 1 if self._iracema_shown else 0, 1),
+            ("Recompensas", sum(1 for r in self.rewards if r.collected), len(self.rewards)),
+        ])
+        self.karma.record_progress("cave_records", sum(1 for r in self.registros if r.read), len(self.registros))
+        self.karma.add_reward_progress(sum(1 for r in self.rewards if r.collected), len(self.rewards))
         self.hud.update()
 
         self.camera.update(
