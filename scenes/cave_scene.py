@@ -9,6 +9,7 @@ from settings import (
 from systems.tilemap import Tilemap
 from systems.dialogue import DialogueBox, ChoiceBox, SystemMessage
 from systems.hud import HUD
+from systems.rewards import RewardPickup, draw_rewards, update_rewards
 from entities.player import Player
 from entities.bat_enemy import BatEnemy
 from entities.guardian_statue import GuardianStatue
@@ -165,6 +166,7 @@ class CaveScene:
         self._ending_triggered  = False
         self._iracema_shown     = False
         self._camara_hint_shown = False
+        self._forced_final      = None
 
     def on_enter(self):
         self._setup()
@@ -191,6 +193,7 @@ class CaveScene:
         self._transitioning = False
         self._transition_timer = 0
         self._camara_hint_shown = False
+        self._forced_final = None
 
         # Player
         start_y = 17 * TILE_SIZE - Player.H
@@ -214,12 +217,19 @@ class CaveScene:
             for i, pos in enumerate(registro_positions)
         ]
         self._registros_read = 0
+        self.rewards = [
+            RewardPickup(26 * TILE_SIZE, 15 * TILE_SIZE - 14, "heart", "Cristal curativo: +1 vida"),
+            RewardPickup(50 * TILE_SIZE, 14 * TILE_SIZE - 14, "heart", "Cristal curativo: +1 vida"),
+            RewardPickup(73 * TILE_SIZE, 10 * TILE_SIZE - 14, "heart_max", "Cristal maior: vida maxima +1"),
+        ]
 
         # Guardião estátua (mini-boss) — mais afastado na caverna expandida
         guardian_y = 17 * TILE_SIZE - 44
         self.guardian = GuardianStatue(660, guardian_y)
         self._guardian_fight_started = False
         self._guardian_death_time    = -1
+        self._iracema_x = 930
+        self._iracema_y = 11 * TILE_SIZE - 28
 
         # Fontes de luz ambiente
         self._light_sources = [
@@ -360,9 +370,28 @@ class CaveScene:
                 self.dialogue.open("guardiao", on_close=self._on_guardian_dialogue_close)
 
         # Iracema encontro — só abre DEPOIS que o guardião foi derrotado
-        if not self._iracema_shown and self.guardian.defeated and self.player.x > 900:
+        if (not self._iracema_shown and self.guardian.defeated
+                and abs(self.player.rect.centerx - self._iracema_x) < 55):
             self._iracema_shown = True
             self.dialogue.open("iracema_proposta", on_close=self._on_iracema_proposta_close)
+        elif not self._iracema_shown and self.guardian.defeated:
+            if abs(self.player.rect.centerx - self._iracema_x) < 95:
+                self.hud.show_interaction("falar com Iracema")
+
+        # Registros da câmara da memória
+        for registro in self.registros:
+            registro.update()
+
+        update_rewards(self.rewards, self.player, self.particles, self.sys_msg, self.karma, self.bus)
+
+        # Indicador de interação com registros
+        if not self.dialogue.active and not self.choice_box.active:
+            pr = self.player.rect
+            for registro in self.registros:
+                if abs(pr.centerx - registro.rect.centerx) < 35 and abs(pr.centery - registro.rect.centery) < 45:
+                    if not registro.read:
+                        self.hud.show_interaction("ler inscrição")
+                    break
 
         # Registros da câmara da memória
         for registro in self.registros:
@@ -381,6 +410,15 @@ class CaveScene:
         self.sys_msg.update()
         self.particles.update()
         self.fx.update()
+        self.hud.set_objectives([
+            ("Memorias", sum(1 for r in self.registros if r.read), len(self.registros)),
+            ("Guardiao", 1 if self.guardian.defeated else 0, 1),
+            ("Iracema", 1 if self._iracema_shown else 0, 1),
+            ("Escolha final", 1 if self._ending_triggered else 0, 1),
+            ("Recompensas", sum(1 for r in self.rewards if r.collected), len(self.rewards)),
+        ])
+        self.karma.record_progress("cave_records", sum(1 for r in self.registros if r.read), len(self.registros))
+        self.karma.add_reward_progress(sum(1 for r in self.rewards if r.collected), len(self.rewards))
         self.hud.update()
 
         self.camera.update(
@@ -430,11 +468,9 @@ class CaveScene:
     # ── Fluxo do encontro com Iracema ─────────────────────────────────────────
 
     def _on_iracema_proposta_close(self):
-        """Após o diálogo da proposta, abre a ChoiceBox."""
-        self.choice_box.open([
-            ("Aceitar o trato",  self._iracema_aceitar),
-            ("Recusar o trato",  self._iracema_recusar),
-        ])
+        """Depois de Iracema, a Pedra apresenta os tres finais."""
+        self.sys_msg.show("A Pedra pede uma escolha final...", 150)
+        self.dialogue.open("pedra_decisao", on_close=self._open_final_choice)
 
     def _iracema_aceitar(self):
         """Player honrou o trato: +sabedoria, abre resposta da Iracema."""
@@ -448,14 +484,46 @@ class CaveScene:
         self.dialogue.open("iracema_recusa", on_close=self._on_iracema_close)
 
     def _on_iracema_close(self):
-        """Após qualquer resposta de Iracema, encaminha para o final."""
-        self.sys_msg.show("Câmara do Tesouro à frente...", 120)
+        """A Pedra ainda exige a decisao que define um dos tres finais."""
+        self.sys_msg.show("A Pedra pede uma escolha final...", 150)
+        self.dialogue.open("pedra_decisao", on_close=self._open_final_choice)
+
+    def _open_final_choice(self):
+        self.choice_box.open([
+            ("Carregar as memorias", self._final_memoria),
+            ("Tomar o tesouro", self._final_tesouro),
+            ("Partir em silencio", self._final_silencio),
+        ])
+
+    def _final_memoria(self):
+        self._forced_final = "verdadeiro"
+        self.karma.aceitou_trato_honrou()
+        self.karma.conversou_com_npc()
+        self.karma.record_progress("final_choice", "memoria")
+        self.dialogue.open("pedra_final_memoria", on_close=self._trigger_ending)
+
+    def _final_tesouro(self):
+        self._forced_final = "ruim"
+        for _ in range(3):
+            self.karma.pegou_item_armadilha()
+        self.karma.aceitou_trato_traiu()
+        self.karma.record_progress("final_choice", "tesouro")
+        self.dialogue.open("pedra_final_tesouro", on_close=self._trigger_ending)
+
+    def _final_silencio(self):
+        self._forced_final = "neutro"
+        self.karma.recusou_trato()
+        self.karma.record_progress("final_choice", "silencio")
+        self.dialogue.open("pedra_final_silencio", on_close=self._trigger_ending)
+
+    def _trigger_ending(self):
+        self.sys_msg.show("A Pedra respondeu a sua escolha.", 120)
         self._ending_triggered = True
 
     def _show_ending(self):
         """Mostra tela de final baseada no karma."""
         from scenes.ending_scene import EndingScene
-        final = self.karma.final_type
+        final = self._forced_final or self.karma.final_type
         self.scene_manager.replace(
             EndingScene(self.scene_manager, self.bus, self.karma, self.input, final)
         )
@@ -483,6 +551,8 @@ class CaveScene:
         for registro in self.registros:
             registro.draw(surf, cam_x, cam_y)
 
+        draw_rewards(self.rewards, surf, cam_x, cam_y)
+
         # Guardião
         if self._guardian_fight_started and not self.guardian.defeated and getattr(self, "_guardian_intro_done", False):
             self.guardian.draw(surf, cam_x, cam_y)
@@ -495,6 +565,17 @@ class CaveScene:
                 self.particles.emit_altar(gx, gy)
 
         # Partículas
+        if self.guardian.defeated:
+            ix = int(self._iracema_x - cam_x)
+            iy = int(self._iracema_y - cam_y)
+            glow = pygame.Surface((48, 58), pygame.SRCALPHA)
+            pygame.draw.ellipse(glow, (80, 160, 220, 70), (2, 2, 44, 54))
+            surf.blit(glow, (ix - 24, iy - 12))
+            pygame.draw.rect(surf, (35, 70, 95), (ix - 5, iy + 12, 10, 20))
+            pygame.draw.circle(surf, (180, 210, 220), (ix, iy + 7), 6)
+            pygame.draw.line(surf, (85, 185, 230), (ix - 8, iy + 18), (ix - 18, iy + 30), 2)
+            pygame.draw.line(surf, (85, 185, 230), (ix + 8, iy + 18), (ix + 18, iy + 30), 2)
+
         self.particles.draw(surf, cam_x, cam_y)
 
         # Player

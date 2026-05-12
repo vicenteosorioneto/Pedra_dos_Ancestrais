@@ -15,6 +15,7 @@ from settings import (
 from systems.tilemap import Tilemap
 from systems.dialogue import DialogueBox, SystemMessage
 from systems.hud import HUD
+from systems.rewards import RewardPickup, draw_rewards, update_rewards
 from entities.player import Player
 from entities.bat_enemy import BatEnemy
 from core.camera import Camera
@@ -39,10 +40,11 @@ def _build_forest_map():
 
     # Plataformas de pedra
     platforms = [
-        (range(5,  11), 12),
-        (range(18, 24), 10),
-        (range(30, 36), 12),
-        (range(42, 48),  9),
+        (range(5,  13), 13),
+        (range(14, 22), 12),
+        (range(23, 31), 12),
+        (range(32, 40), 11),
+        (range(41, 49), 11),
     ]
     for cols, row in platforms:
         for col in cols:
@@ -64,7 +66,7 @@ def _build_forest_map():
         if data[15][col] == 0:
             data[15][col] = 13
 
-    registro_positions = [(14, 16), (38, 16)]
+    registro_positions = [(3, 16), (35, 16)]
     return data, COLS, ROWS, registro_positions
 
 
@@ -206,6 +208,7 @@ class ForestScene:
         self._paused   = False
         self._transitioning   = False
         self._transition_timer = 0
+        self._exit_block_timer = 0
 
         # Player — herda HP se veio de cena anterior
         start_y = 15 * TILE_SIZE - Player.H
@@ -214,17 +217,17 @@ class ForestScene:
             self.player.hp = max(1, self._prev_player.hp)
 
         # Inimigos
-        bat_y = 7 * TILE_SIZE
+        bat_y = 11 * TILE_SIZE
         self.enemies = [
             BatEnemy(200, bat_y),
-            BatEnemy(370, bat_y - 10),
-            BatEnemy(560, bat_y + 5),
+            BatEnemy(370, bat_y - 6),
+            BatEnemy(560, bat_y + 2),
         ]
 
         # NPC: Peregrino (usa sprite de ElderNPC para distinção visual)
         from entities.npc import ElderNPC
-        ground_y = 15 * TILE_SIZE - Player.H
-        self._peregrino = ElderNPC(120, ground_y)
+        ground_y = 16 * TILE_SIZE - ElderNPC.H
+        self._peregrino = ElderNPC(220, ground_y)
         self._peregrino_talked = False
 
         # Registros ancestrais
@@ -233,7 +236,13 @@ class ForestScene:
             for i, pos in enumerate(registro_positions)
         ]
 
+        self.rewards = [
+            RewardPickup(30 * TILE_SIZE, 12 * TILE_SIZE - 14, "wisdom", "Folha marcada: sabedoria +1"),
+            RewardPickup(44 * TILE_SIZE, 11 * TILE_SIZE - 14, "heart", "Fruto da mata: +1 vida"),
+        ]
+
         self.fx.fade_in(frames=22)
+        self.sys_msg.show("As inscricoes revelam a historia da Pedra e mudam o fim.", 180)
         self._ready = True
 
     # ── Eventos ──────────────────────────────────────────────────────────────
@@ -308,6 +317,8 @@ class ForestScene:
         if self.hud.death_active:
             self.hud.update()
             return
+        if self._exit_block_timer > 0:
+            self._exit_block_timer -= 1
 
         self.time += 1
 
@@ -345,6 +356,8 @@ class ForestScene:
         for registro in self.registros:
             registro.update()
 
+        update_rewards(self.rewards, self.player, self.particles, self.sys_msg, self.karma, self.bus)
+
         if not self.dialogue.active:
             for registro in self.registros:
                 if (abs(pr.centerx - registro.rect.centerx) < 35 and
@@ -357,6 +370,14 @@ class ForestScene:
         self.sys_msg.update()
         self.particles.update()
         self.fx.update()
+        self.hud.set_objectives([
+            ("Falar com Peregrino", 1 if self._peregrino_talked else 0, 1),
+            ("Inscricoes", sum(1 for r in self.registros if r.read), len(self.registros)),
+            ("Recompensas", sum(1 for r in self.rewards if r.collected), len(self.rewards)),
+            ("Chegar as ruinas", 1 if self._transitioning else 0, 1),
+        ])
+        self.karma.record_progress("forest_records", sum(1 for r in self.registros if r.read), len(self.registros))
+        self.karma.add_reward_progress(sum(1 for r in self.rewards if r.collected), len(self.rewards))
         self.hud.update()
 
         self.camera.update(
@@ -369,9 +390,13 @@ class ForestScene:
 
         # Transição → RuinsScene
         if self.player.x > self.NEXT_SCENE_X - 50 and not self._transitioning:
-            self._transitioning    = True
-            self._transition_timer = 25
-            self.fx.fade_out(25)
+            if self._all_objectives_done():
+                self._transitioning    = True
+                self._transition_timer = 25
+                self.fx.fade_out(25)
+            else:
+                self.player.x = self.NEXT_SCENE_X - 58
+                self._show_missing_objectives()
 
         if self._transitioning:
             self._transition_timer -= 1
@@ -384,6 +409,19 @@ class ForestScene:
 
         if self.player.x < 0:
             self.player.x = 0
+
+    def _all_objectives_done(self):
+        return (
+            self._peregrino_talked
+            and all(r.read for r in self.registros)
+            and all(r.collected for r in self.rewards)
+        )
+
+    def _show_missing_objectives(self):
+        if self._exit_block_timer > 0:
+            return
+        self._exit_block_timer = 90
+        self.sys_msg.show("Leia as inscricoes, fale com o Peregrino e pegue as recompensas.", 160)
 
     # ── Draw ─────────────────────────────────────────────────────────────────
 
@@ -404,6 +442,8 @@ class ForestScene:
 
         for registro in self.registros:
             registro.draw(surf, cam_x, cam_y)
+
+        draw_rewards(self.rewards, surf, cam_x, cam_y)
 
         for enemy in self.enemies:
             enemy.draw(surf, cam_x, cam_y)

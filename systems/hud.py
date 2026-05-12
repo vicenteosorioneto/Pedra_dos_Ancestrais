@@ -8,7 +8,7 @@
 
 import pygame
 import math
-from settings import PALETTE_SERTAO as P, BLACK, GOLD, SCREEN_W, SCREEN_H
+from settings import PALETTE_SERTAO as P, BLACK, GOLD, SCREEN_W, SCREEN_H, HD_UI
 from art.fx import Particle
 
 
@@ -43,10 +43,10 @@ def _draw_heart(surf, x, y, full=True):
 
 
 class HUD:
-    HP_BOX_X = 4
-    HP_BOX_Y = 4
-    HP_BOX_W = 62
-    HP_BOX_H = 20
+    HP_BOX_X = 32
+    HP_BOX_Y = 20
+    HP_BOX_W = 96
+    HP_BOX_H = 30
 
     def __init__(self, karma_system=None):
         self.karma = karma_system
@@ -58,6 +58,7 @@ class HUD:
         self.interaction_timer = 0
         self._altar_count = -1
         self._altar_total = 3
+        self._objectives = []
         self._scene_label = ""
         self._damage_timer = 0
         self._prev_hp = -1
@@ -75,13 +76,22 @@ class HUD:
     def _init_fonts(self):
         if self._font is None:
             try:
-                self._font       = pygame.font.SysFont("Courier New", 11, bold=True)
+                self._font       = pygame.font.SysFont("Courier New", 12, bold=True)
                 self._small_font = pygame.font.SysFont("Courier New", 10)
-                self._big_font   = pygame.font.SysFont("Courier New", 18, bold=True)
+                self._big_font   = pygame.font.SysFont("Courier New", 22, bold=True)
             except Exception:
-                self._font       = pygame.font.Font(None, 14)
-                self._small_font = pygame.font.Font(None, 12)
-                self._big_font   = pygame.font.Font(None, 24)
+                self._font       = pygame.font.Font(None, 16)
+                self._small_font = pygame.font.Font(None, 14)
+                self._big_font   = pygame.font.Font(None, 28)
+
+    def _fit_text(self, text, max_width):
+        """Shortens HUD labels so they stay inside fixed panels."""
+        if self._small_font.size(text)[0] <= max_width:
+            return text
+        suffix = "..."
+        while text and self._small_font.size(text + suffix)[0] > max_width:
+            text = text[:-1]
+        return (text + suffix) if text else suffix
 
     # ── API pública ──────────────────────────────────────────────────────────
 
@@ -99,6 +109,9 @@ class HUD:
 
     def clear_altar_progress(self):
         self._altar_count = -1
+
+    def set_objectives(self, objectives):
+        self._objectives = list(objectives or [])
 
     def show_interaction(self, text):
         self.interaction_text  = text
@@ -161,9 +174,12 @@ class HUD:
     # ── Draw ─────────────────────────────────────────────────────────────────
 
     def draw(self, surf, player_hp, player_max_hp=3):
+        if HD_UI:
+            return
         self._init_fonts()
         self._draw_hp_area(surf, player_hp, player_max_hp)
         self._draw_altar_counter(surf)
+        self._draw_objectives(surf)
         self._draw_scene_label(surf)
         self._draw_interaction(surf)
         for p in self.particles:
@@ -198,7 +214,9 @@ class HUD:
         pygame.draw.rect(surf, GOLD,       (bx+1, by+1, bw-2, bh-2), 1)
 
         for i in range(max_hp):
-            _draw_heart(surf, bx+4+i*16, by+4, full=(i < hp))
+            hx = bx + 8 + i * 18
+            hy = by + 9
+            _draw_heart(surf, hx, hy, full=(i < hp))
 
     def _draw_altar_counter(self, surf):
         if self._altar_count < 0: return
@@ -206,8 +224,8 @@ class HUD:
         done = (n >= total)
         bx = self.HP_BOX_X
         by = self.HP_BOX_Y + self.HP_BOX_H + 3
-        bw = self.HP_BOX_W
-        bh = 16
+        bw = max(self.HP_BOX_W, 28 + total * 18 + self._small_font.render(f"{n}/{total}", True, GOLD).get_width())
+        bh = 24
 
         bg = pygame.Surface((bw, bh))
         bg.set_alpha(175)
@@ -218,25 +236,64 @@ class HUD:
         pygame.draw.rect(surf, border_col, (bx, by, bw, bh), 1)
 
         # Triângulos (altares)
+        spacing = 17 if total > 3 else 20
         for i in range(total):
             col = (220, 180, 60) if i < n else (40, 32, 15)
-            tx = bx + 8 + i * 16
-            ty = by + 3
+            tx = bx + 8 + i * spacing
+            ty = by + 5
             pygame.draw.polygon(surf, col, [(tx+6, ty), (tx+1, ty+9), (tx+11, ty+9)])
             pygame.draw.polygon(surf, (160, 130, 40) if i < n else (25,20,8),
                                 [(tx+6, ty), (tx+1, ty+9), (tx+11, ty+9)], 1)
 
         label = self._small_font.render(f"{n}/{total}", True,
                                         (100,220,120) if done else (180,160,100))
-        surf.blit(label, (bx+bw-label.get_width()-4, by+3))
+        surf.blit(label, (bx+bw-label.get_width()-6, by+4))
+
+    def _draw_objectives(self, surf):
+        if not self._objectives:
+            return
+
+        rows = []
+        for item in self._objectives:
+            if len(item) == 2:
+                label, done = item
+                text = f"{label} ({1 if done else 0}/1)"
+                complete = bool(done)
+            else:
+                label, count, total = item[:3]
+                count = max(0, min(int(count), int(total)))
+                complete = count >= int(total)
+                text = f"{label} ({count}/{total})"
+            rows.append((text, complete))
+
+        bx = self.HP_BOX_X
+        by = self.HP_BOX_Y + self.HP_BOX_H + 6
+        if self._altar_count >= 0:
+            by += 28
+
+        width = min(180, max(142, max(self._small_font.render(t, True, GOLD).get_width() for t, _ in rows) + 16))
+        row_h = self._small_font.get_height() + 3
+        height = 20 + len(rows) * row_h
+        bg = pygame.Surface((width, height), pygame.SRCALPHA)
+        bg.fill((0, 0, 0, 150))
+        surf.blit(bg, (bx, by))
+        pygame.draw.rect(surf, (55, 44, 20), (bx, by, width, height), 1)
+
+        title = self._small_font.render("OBJETIVOS", True, GOLD)
+        surf.blit(title, (bx + 7, by + 4))
+        for i, (text, complete) in enumerate(rows):
+            col = (100, 220, 120) if complete else (220, 210, 180)
+            fitted = self._fit_text(text, width - 14)
+            ts = self._small_font.render(fitted, True, col)
+            surf.blit(ts, (bx + 7, by + 20 + i * row_h))
 
     def _draw_scene_label(self, surf):
         if not self._scene_label: return
         label = self._small_font.render(self._scene_label, True, (180, 160, 120))
         lw = label.get_width()
         lh = label.get_height()
-        bx = SCREEN_W - lw - 10
-        by = 6
+        bx = SCREEN_W - lw - 18
+        by = 12
         bg = pygame.Surface((lw+8, lh+4), pygame.SRCALPHA)
         bg.fill((0, 0, 0, 120))
         surf.blit(bg, (bx-4, by-2))
@@ -251,14 +308,14 @@ class HUD:
         text = f"[X] {self.interaction_text}"
         ts = self._small_font.render(text, True, col)
         pw = ts.get_width() + 16
-        ph = 14
+        ph = self._small_font.get_height() + 8
         bx = (SCREEN_W - pw) // 2
-        by = SCREEN_H - 108
+        by = SCREEN_H - 132
         bg = pygame.Surface((pw, ph), pygame.SRCALPHA)
         bg.fill((0, 0, 0, 160))
         surf.blit(bg, (bx, by))
         pygame.draw.rect(surf, col, (bx, by, pw, ph), 1)
-        surf.blit(ts, (bx+8, by+2))
+        surf.blit(ts, (bx+8, by+4))
 
     def _draw_death(self, surf):
         t = self._death_timer
@@ -298,13 +355,14 @@ class HUD:
                 "[ESC]    Sair ao Menu",
                 "[C]      Ver Controles",
             ]
+            line_h = self._small_font.get_height() + 8
             for i, opt in enumerate(options):
                 ts = self._small_font.render(opt, True, col_btn)
-                surf.blit(ts, ((SCREEN_W-ts.get_width())//2, SCREEN_H//2+18+i*18))
+                surf.blit(ts, ((SCREEN_W-ts.get_width())//2, SCREEN_H//2+26+i*line_h))
 
     def _draw_controls_panel(self, surf):
         """Painel de controles exibido dentro da tela de morte."""
-        pw, ph = 300, 190
+        pw, ph = 360, 230
         px = (SCREEN_W - pw) // 2
         py = (SCREEN_H - ph) // 2
 
@@ -318,7 +376,7 @@ class HUD:
         title = self._big_font.render("CONTROLES", True, GOLD)
         surf.blit(title, ((SCREEN_W - title.get_width()) // 2, py + 10))
 
-        pygame.draw.line(surf, (60, 48, 24), (px+16, py+32), (px+pw-16, py+32), 1)
+        pygame.draw.line(surf, (60, 48, 24), (px+20, py+46), (px+pw-20, py+46), 1)
 
         controles = [
             ("← →",          "Mover"),
@@ -334,13 +392,13 @@ class HUD:
         for i, (key, action) in enumerate(controles):
             k_surf = fs.render(key, True, col_key)
             a_surf = fs.render(action, True, col_val)
-            y = py + 42 + i * 20
-            surf.blit(k_surf, (px + 20, y))
-            surf.blit(a_surf, (px + 160, y))
+            y = py + 56 + i * 23
+            surf.blit(k_surf, (px + 28, y))
+            surf.blit(a_surf, (px + 200, y))
 
-        pygame.draw.line(surf, (60, 48, 24), (px+16, py+ph-24), (px+pw-16, py+ph-24), 1)
+        pygame.draw.line(surf, (60, 48, 24), (px+20, py+ph-34), (px+pw-20, py+ph-34), 1)
         back = fs.render("[C] ou [ESC]  Voltar", True, (140, 120, 80))
-        surf.blit(back, ((SCREEN_W - back.get_width()) // 2, py + ph - 18))
+        surf.blit(back, ((SCREEN_W - back.get_width()) // 2, py + ph - 26))
 
     def _draw_pause(self, surf):
         W, H = SCREEN_W, SCREEN_H
@@ -349,7 +407,7 @@ class HUD:
         ov.fill((0, 0, 0, 175))
         surf.blit(ov, (0, 0))
 
-        pw, ph = 200, 108
+        pw, ph = 280, 145
         px = (W-pw)//2
         py = (H-ph)//2
 
@@ -361,9 +419,9 @@ class HUD:
 
         ft = self._big_font
         t = ft.render("PAUSADO", True, GOLD)
-        surf.blit(t, ((W-t.get_width())//2, py+12))
+        surf.blit(t, ((W-t.get_width())//2, py+18))
 
-        pygame.draw.line(surf, (60,48,24), (px+16,py+34), (px+pw-16,py+34), 1)
+        pygame.draw.line(surf, (60,48,24), (px+22,py+56), (px+pw-22,py+56), 1)
 
         fs = self._small_font
         items = [
@@ -372,8 +430,8 @@ class HUD:
         ]
         for i, (text, col) in enumerate(items):
             ts = fs.render(text, True, col)
-            surf.blit(ts, ((W-ts.get_width())//2, py+44+i*22))
+            surf.blit(ts, ((W-ts.get_width())//2, py+72+i*30))
 
         if self._scene_label:
             ta = fs.render(self._scene_label, True, (70,58,34))
-            surf.blit(ta, ((W-ta.get_width())//2, py+ph-16))
+            surf.blit(ta, ((W-ta.get_width())//2, py+ph-26))

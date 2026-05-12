@@ -4,7 +4,7 @@ from __future__ import annotations
 import pygame
 import sys
 
-from config.display import SCREEN_W, SCREEN_H, WINDOW_W, WINDOW_H, FPS, TITLE
+from config.display import SCREEN_W, SCREEN_H, WINDOW_W, WINDOW_H, FPS, TITLE, FULLSCREEN, HD_UI
 from core.scene_manager import SceneManager
 from core.event_bus import EventBus
 from core.input_manager import InputManager
@@ -23,10 +23,15 @@ class Game:
     """
 
     def __init__(self) -> None:
+        self._enable_dpi_awareness()
         pygame.init()
-        pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
+        try:
+            pygame.mixer.init(frequency=22050, size=-16, channels=1, buffer=512)
+        except pygame.error:
+            pass
 
-        self.window  = pygame.display.set_mode((WINDOW_W, WINDOW_H))
+        flags = pygame.FULLSCREEN if FULLSCREEN else 0
+        self.window  = pygame.display.set_mode((WINDOW_W, WINDOW_H), flags)
         pygame.display.set_caption(TITLE)
 
         try:
@@ -45,6 +50,21 @@ class Game:
         self.karma         = KarmaSystem(self.bus)
         self.input_manager = InputManager()
         self.scene_manager = SceneManager()
+        from systems.audio import AudioManager
+        self.audio = AudioManager(self.bus)
+
+    def _enable_dpi_awareness(self) -> None:
+        if sys.platform != "win32":
+            return
+        try:
+            import ctypes
+            ctypes.windll.shcore.SetProcessDpiAwareness(1)
+        except Exception:
+            try:
+                import ctypes
+                ctypes.windll.user32.SetProcessDPIAware()
+            except Exception:
+                pass
 
     def start(self) -> None:
         """Carrega a cena inicial. Chamado por main.py após __init__."""
@@ -78,12 +98,23 @@ class Game:
     def _update(self) -> None:
         if scene := self.scene_manager.current:
             scene.update()
+            self.audio.update_for_scene(scene)
         self.scene_manager.apply_pending()
 
     def _draw(self) -> None:
         self.screen.fill((0, 0, 0))
         if scene := self.scene_manager.current:
             scene.draw(self.screen)
-        scaled = pygame.transform.scale(self.screen, (WINDOW_W, WINDOW_H))
-        self.window.blit(scaled, (0, 0))
+        window_w, window_h = self.window.get_size()
+        scale = max(1, min(window_w // SCREEN_W, window_h // SCREEN_H))
+        scaled_w = SCREEN_W * scale
+        scaled_h = SCREEN_H * scale
+        offset_x = (window_w - scaled_w) // 2
+        offset_y = (window_h - scaled_h) // 2
+        self.window.fill((0, 0, 0))
+        scaled = pygame.transform.scale(self.screen, (scaled_w, scaled_h))
+        self.window.blit(scaled, (offset_x, offset_y))
+        if HD_UI and (scene := self.scene_manager.current):
+            from systems.hd_ui import draw_hd_ui
+            draw_hd_ui(self.window, scene)
         pygame.display.flip()

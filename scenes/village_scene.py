@@ -9,6 +9,8 @@ from settings import (
 from systems.tilemap import Tilemap
 from systems.dialogue import DialogueBox, SystemMessage
 from systems.hud import HUD
+from systems.minigames import MiniGameTotem
+from systems.rewards import RewardPickup, draw_rewards, update_rewards
 from entities.player import Player
 from entities.npc import VillagerNPC, ElderNPC, ComercianteNPC, CriancaNPC, MoradorMedoNPC
 from core.camera import Camera
@@ -40,7 +42,7 @@ def _build_village_map():
         data[21][col] = 4
 
     # Plataformas flutuantes
-    def platform(cols_range, row, top=1, mid=2, base=3, height=2):
+    def platform(cols_range, row, top=1, mid=2, base=3, height=1):
         for c in cols_range:
             data[row][c] = top
             for dy in range(1, height+1):
@@ -236,32 +238,55 @@ class VillageScene:
         self.hud.set_scene_label("ATO 1 — VILA")
 
         # NPCs — estrutura única evita bug de desincronização de índices
-        ground_y = 14 * TILE_SIZE - Player.H
+        ground_y = 14 * TILE_SIZE - VillagerNPC.H
+        child_y = 14 * TILE_SIZE - CriancaNPC.H
         self._npc_slots = [
-            {"npc": VillagerNPC(120, ground_y, variant=0, patrol_range=40),
+            {"npc": VillagerNPC(120, ground_y, variant=0, patrol_range=0),
              "key": "aldeao_0",    "name": "Aldeão",          "talked": False},
-            {"npc": CriancaNPC(300, ground_y),
+            {"npc": CriancaNPC(260, child_y),
              "key": "crianca",     "name": "Criança",         "talked": False},
-            {"npc": VillagerNPC(420, ground_y, variant=1, patrol_range=0),
+            {"npc": VillagerNPC(430, ground_y, variant=1, patrol_range=0),
              "key": "aldeao_2",    "name": "Aldeão",          "talked": False},
-            {"npc": ElderNPC(560, ground_y),
+            {"npc": ElderNPC(600, ground_y),
              "key": "zequinha",    "name": "Seu Zequinha",    "talked": False},
-            {"npc": VillagerNPC(620, ground_y, variant=2, patrol_range=0),
+            {"npc": VillagerNPC(720, ground_y, variant=2, patrol_range=0),
              "key": "aldeao_2",    "name": "Aldeão",          "talked": False},
-            {"npc": ComercianteNPC(740, ground_y),
+            {"npc": ComercianteNPC(850, ground_y),
              "key": "comerciante", "name": "Comerciante",     "talked": False},
-            {"npc": MoradorMedoNPC(920, ground_y),
+            {"npc": MoradorMedoNPC(1030, ground_y),
              "key": "morador_medo","name": "Morador",         "talked": False},
         ]
+        self._npc_slots = [s for s in self._npc_slots if s["key"] not in {"aldeao_2", "morador_medo"}]
+        for slot in self._npc_slots:
+            if slot["key"] == "zequinha":
+                slot["npc"].x = 560
+            elif slot["key"] == "comerciante":
+                slot["npc"].x = 930
         self._zequinha_disappeared = False
         self._transitioning        = False
         self._transition_timer     = 0
+        self._exit_block_timer     = 0
+
+        self.rewards = [
+            RewardPickup(430, 13 * TILE_SIZE - 12, "wisdom", "Pedra marcada: sabedoria +1"),
+        ]
+
+        def _village_game_win():
+            self.player.hp = min(self.player.max_hp, self.player.hp + 1)
+            self.karma.conversou_com_npc()
+            self.particles.emit_phase_burst(270, 13 * TILE_SIZE)
+            self.sys_msg.show("Jogo do vento concluido: +1 vida", 140)
+
+        self.minigames = [
+            MiniGameTotem(360, 14 * TILE_SIZE - 22, "Jogo do vento", _village_game_win),
+        ]
 
         self._paused = False
         self._ready  = True
 
         # Fade in
         self.fx.fade_in(frames=20)
+        self.sys_msg.show("Cada conversa e lembranca fortalece o final da jornada.", 180)
 
     def handle_event(self, event):
         if not self._ready:
@@ -288,6 +313,11 @@ class VillageScene:
             if event.type == pygame.KEYDOWN and event.key in (pygame.K_x, pygame.K_k, pygame.K_RETURN, pygame.K_SPACE):
                 self.dialogue.advance()
             return
+
+        for totem in getattr(self, "minigames", []):
+            if totem.game.active:
+                totem.handle_event(event)
+                return
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
@@ -347,10 +377,27 @@ class VillageScene:
                 self.dialogue.open(slot["key"], avatar_surf=npc.get_avatar(), on_close=on_close)
                 return
 
+        for totem in self.minigames:
+            if not totem.done and pr.inflate(34, 34).colliderect(totem.rect):
+                totem.open()
+                return
+
     def update(self):
         if not self._ready or self._paused:
             return
         if self.hud.death_active:
+            self.hud.update()
+            return
+        if self._exit_block_timer > 0:
+            self._exit_block_timer -= 1
+
+        for totem in self.minigames:
+            totem.update()
+
+        if any(totem.game.active for totem in self.minigames):
+            self.sys_msg.update()
+            self.particles.update()
+            self.fx.update()
             self.hud.update()
             return
 
@@ -368,8 +415,17 @@ class VillageScene:
         for slot in self._npc_slots:
             slot["npc"].update()
 
+        update_rewards(self.rewards, self.player, self.particles, self.sys_msg, self.karma, self.bus)
         self.particles.update()
         self.fx.update()
+        self.hud.set_objectives([
+            ("Conversas", sum(1 for s in self._npc_slots if s.get("talked")), len(self._npc_slots)),
+            ("Desafio do vento", sum(1 for t in self.minigames if t.done), len(self.minigames)),
+            ("Sabedoria", sum(1 for r in self.rewards if r.collected), len(self.rewards)),
+            ("Ir para floresta", 1 if self._transitioning else 0, 1),
+        ])
+        self.karma.record_progress("village_talks", sum(1 for s in self._npc_slots if s.get("talked")), len(self._npc_slots))
+        self.karma.add_reward_progress(sum(1 for r in self.rewards if r.collected), len(self.rewards))
         self.hud.update()
 
         # Morte do player
@@ -389,10 +445,19 @@ class VillageScene:
             if abs(pr.centerx - npc.rect.centerx) < 40 and abs(pr.centery - npc.rect.centery) < 40:
                 self.hud.show_interaction(f"conversar com {slot['name']}")
                 break
+        else:
+            for totem in self.minigames:
+                if not totem.done and pr.inflate(34, 34).colliderect(totem.rect):
+                    self.hud.show_interaction("jogar desafio do vento")
+                    break
 
         # Transição para próxima cena
         if self.player.x > self.NEXT_SCENE_X and not self._transitioning:
-            self._go_to_forest()
+            if self._all_objectives_done():
+                self._go_to_forest()
+            else:
+                self.player.x = self.NEXT_SCENE_X - 6
+                self._show_missing_objectives()
 
         # Timer de transição — aqui no update, não no draw
         if self._transitioning:
@@ -413,6 +478,19 @@ class VillageScene:
         from systems.karma import KarmaSystem
         new_karma = KarmaSystem(self.bus)
         self.scene_manager.replace(IntroScene(self.scene_manager, self.bus, new_karma, self.input))
+
+    def _all_objectives_done(self):
+        return (
+            all(s.get("talked") for s in self._npc_slots)
+            and all(t.done for t in self.minigames)
+            and all(r.collected for r in self.rewards)
+        )
+
+    def _show_missing_objectives(self):
+        if self._exit_block_timer > 0:
+            return
+        self._exit_block_timer = 90
+        self.sys_msg.show("Complete conversas, desafio e sabedoria antes de seguir.", 150)
 
     def _go_to_forest(self):
         self.fx.fade_out(frames=20)
@@ -441,6 +519,11 @@ class VillageScene:
         for slot in self._npc_slots:
             slot["npc"].draw(surf, cam_x, cam_y)
 
+        draw_rewards(self.rewards, surf, cam_x, cam_y)
+
+        for totem in self.minigames:
+            totem.draw_world(surf, cam_x, cam_y)
+
         # ── Partículas ──
         self.particles.draw(surf, cam_x, cam_y)
 
@@ -453,6 +536,8 @@ class VillageScene:
         # ── Diálogo ──
         self.dialogue.draw(surf)
         self.sys_msg.draw(surf)
+        for totem in self.minigames:
+            totem.draw_overlay(surf)
 
         # ── Efeitos de tela ──
         self.fx.draw(surf)

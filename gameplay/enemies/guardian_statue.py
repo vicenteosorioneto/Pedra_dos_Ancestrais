@@ -11,7 +11,7 @@ class GuardianStatue(Enemy):
 
     def __init__(self, x, y):
         super().__init__(x, y, w=26, h=44)
-        self.hp = 8; self.max_hp = 8; self.damage = 0
+        self.hp = 14; self.max_hp = 14; self.damage = 0
         self.phase = 1; self.speed = self.SPEED_P1
 
         # Movimento suavizado
@@ -51,9 +51,6 @@ class GuardianStatue(Enemy):
         # Despertar
         if self.awaken_timer > 0:
             self.awaken_timer -= 1
-            # Tremer levemente
-            self._wake_shake = 0.8 if self.awaken_timer % 6 < 3 else -0.8
-            self.x += self._wake_shake
             if self.awaken_timer == 0:
                 self._awake = True
                 self._vel_x = 0.0
