@@ -31,7 +31,7 @@ def _draw_pedra_castelo_large(surf, cx, cy):
     pygame.draw.line(surf, rock_dark, (cx-5,cy-78),(cx-3,cy-20),1)
     pygame.draw.line(surf, rock_dark, (cx+8,cy-50),(cx+10,cy+40),1)
 
-MENU_ITEMS = ["Iniciar Jogo", "Controles", "Opções", "Sair"]
+MENU_ITEMS = ["Jogar", "Créditos", "Controles", "Opções", "Sair"]
 CONTROLS = [("MOVER","A / ← →"),("PULAR","W / Espaço"),("ATACAR","Z ou J"),
             ("INTERAGIR","X ou K"),("PAUSAR","ESC"),("CONFIRMAR","ENTER")]
 
@@ -41,7 +41,7 @@ class IntroScene:
         self.bus = bus; self.karma = karma; self.input = input_manager
         self.time = 0; self.particles = []; self._initialized = False
         self._star_rng = random.Random(7); self._stars = []
-        self._sel = 0; self._screen = "main"   # main|controls|options
+        self._sel = 0; self._screen = "main"   # main|credits|controls|options
         self._opt_sel = 0
         self._sel_cd = 0
         self._fonts = {}
@@ -99,9 +99,10 @@ class IntroScene:
 
     def _activate(self, idx):
         if idx == 0: self._start_game()
-        elif idx == 1: self._screen = "controls"
-        elif idx == 2: self._screen = "options"
-        elif idx == 3: pygame.event.post(pygame.event.Event(pygame.QUIT))
+        elif idx == 1: self._screen = "credits"
+        elif idx == 2: self._screen = "controls"
+        elif idx == 3: self._screen = "options"
+        elif idx == 4: pygame.event.post(pygame.event.Event(pygame.QUIT))
 
     def _start_game(self):
         from scenes.village_scene import VillageScene
@@ -151,6 +152,7 @@ class IntroScene:
         if self._screen == "main":   self._draw_main(surf)
         elif self._screen == "controls": self._draw_controls(surf)
         elif self._screen == "options":  self._draw_options(surf)
+        elif self._screen == "credits":  self._draw_credits(surf)
 
     def _draw_main(self, surf):
         W,H = SCREEN_W, SCREEN_H
@@ -311,6 +313,25 @@ class IntroScene:
             y=y0+i*18
             surf.blit(fb.render(action,True,GOLD),(W//2-95,y))
             surf.blit(fi.render(key,True,(200,178,120)),(W//2+12,y))
+        back=self._f(9).render("[ESC / X] Voltar",True,(90,76,44))
+        surf.blit(back,((W-back.get_width())//2,H//2+70))
+
+    def _draw_credits(self, surf):
+        W,H = SCREEN_W,SCREEN_H
+        self._draw_submenu_bg(surf,"CREDITOS")
+        fi=self._f(10)
+        fb=self._f(10,bold=True)
+        lines = [
+            ("A Pedra dos Ancestrais", GOLD),
+            ("Codigo e mecanicas: projeto autoral em Python/Pygame", (200,178,120)),
+            ("Arte, audio e efeitos: pixel art/procedural em codigo", (200,178,120)),
+            ("Tema: plataforma narrativo no sertao brasileiro", (200,178,120)),
+        ]
+        y0 = H//2-42
+        for i, (line, col) in enumerate(lines):
+            font = fb if i == 0 else fi
+            text = font.render(line, True, col)
+            surf.blit(text, ((W-text.get_width())//2, y0+i*20))
         back=self._f(9).render("[ESC / X] Voltar",True,(90,76,44))
         surf.blit(back,((W-back.get_width())//2,H//2+70))
 

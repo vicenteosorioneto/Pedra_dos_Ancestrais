@@ -11,6 +11,22 @@ Jogo 2D de plataforma com elementos leves de RPG, ambientado no sertão nordesti
 - **Arte:** pixel art procedural gerada em código
 - **Progressão:** atos, exploração, combate simples, diálogos e sistema de karma invisível
 
+## Checklist de Entrega P2
+
+O projeto está preparado como produto executável fechado, não como protótipo de editor.
+
+| Requisito | Implementação |
+| --- | --- |
+| Tela de título | Menu principal com `Jogar`, `Créditos`, `Controles`, `Opções` e `Sair` |
+| Gameplay | Fases jogáveis com plataforma, exploração, combate, coleta, diálogos e objetivos |
+| Game Over | Ao zerar vida, aparece tela de morte com `Tentar de novo`, menu e controles |
+| Vitória/progressão | Objetivos completos levam à próxima fase; o final permite voltar ao menu/recomeçar |
+| Dificuldade crescente | Vila/floresta apresentam exploração; trilha/ruínas testam registros, altares e desafios; caverna culmina com guardião e escolha final |
+| Derrota ativa | Inimigos e guardião causam dano; vida zerada bloqueia gameplay e força reinício controlado |
+| HUD funcional | Corações de vida, contadores de objetivos/altares/coletas, mensagens e feedback visual de dano/coleta |
+| Build | Executável Windows gerado em `dist/PedraDosAncestrais.exe` com PyInstaller |
+| Autoria | Mecânicas principais, arte procedural, áudio procedural e sistemas foram implementados em Python/Pygame |
+
 ## Requisitos
 
 - Python 3.9 ou superior
