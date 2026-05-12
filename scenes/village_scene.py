@@ -265,6 +265,7 @@ class VillageScene:
         self._zequinha_disappeared = False
         self._transitioning        = False
         self._transition_timer     = 0
+        self._exit_block_timer     = 0
 
         self.rewards = [
             RewardPickup(430, 13 * TILE_SIZE - 12, "wisdom", "Pedra marcada: sabedoria +1"),
@@ -285,6 +286,7 @@ class VillageScene:
 
         # Fade in
         self.fx.fade_in(frames=20)
+        self.sys_msg.show("Cada conversa e lembranca fortalece o final da jornada.", 180)
 
     def handle_event(self, event):
         if not self._ready:
@@ -386,6 +388,8 @@ class VillageScene:
         if self.hud.death_active:
             self.hud.update()
             return
+        if self._exit_block_timer > 0:
+            self._exit_block_timer -= 1
 
         for totem in self.minigames:
             totem.update()
@@ -447,7 +451,11 @@ class VillageScene:
 
         # Transição para próxima cena
         if self.player.x > self.NEXT_SCENE_X and not self._transitioning:
-            self._go_to_forest()
+            if self._all_objectives_done():
+                self._go_to_forest()
+            else:
+                self.player.x = self.NEXT_SCENE_X - 6
+                self._show_missing_objectives()
 
         # Timer de transição — aqui no update, não no draw
         if self._transitioning:
@@ -468,6 +476,19 @@ class VillageScene:
         from systems.karma import KarmaSystem
         new_karma = KarmaSystem(self.bus)
         self.scene_manager.replace(IntroScene(self.scene_manager, self.bus, new_karma, self.input))
+
+    def _all_objectives_done(self):
+        return (
+            all(s.get("talked") for s in self._npc_slots)
+            and all(t.done for t in self.minigames)
+            and all(r.collected for r in self.rewards)
+        )
+
+    def _show_missing_objectives(self):
+        if self._exit_block_timer > 0:
+            return
+        self._exit_block_timer = 90
+        self.sys_msg.show("Complete conversas, desafio e sabedoria antes de seguir.", 150)
 
     def _go_to_forest(self):
         self.fx.fade_out(frames=20)

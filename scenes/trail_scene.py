@@ -32,7 +32,7 @@ def _build_trail_map():
     # Degraus subindo da esquerda para direita (trilha mais longa)
     steps = [
         (2,  15, range(16, 26)),
-        (3,  14, range(36, 46)),
+        (3,  14, range(36, 42)),
         (4,  13, range(60, 70)),
     ]
     for dy, row, cols in steps:
@@ -55,8 +55,8 @@ def _build_trail_map():
     platforms = [
         (range(12, 18), 14),
         (range(22, 28), 13),
-        (range(35, 41), 13),
-        (range(46, 52), 12),
+        (range(34, 40), 14),
+        (range(46, 52), 14),
         (range(58, 64), 12),
         (range(68, 74), 13),
         (range(78, 84), 13),
@@ -67,10 +67,10 @@ def _build_trail_map():
                 data[row][col] = 8
 
     # 5 altares espalhados pela trilha
-    altar_positions = [(12, 17), (28, 17), (44, 17), (60, 17), (76, 17)]
+    altar_positions = [(12, 17), (28, 17), (43, 17), (60, 17), (76, 17)]
 
     # 3 inscrições de pedra (registros) ao longo da trilha
-    registro_positions = [(15, 14), (49, 12), (71, 13)]
+    registro_positions = [(15, 14), (49, 14), (71, 13)]
 
     # Parede de bloqueio no fim da trilha (toda a altura)
     WALL_COLS = range(86, 90)
@@ -275,6 +275,7 @@ class TrailScene:
         self._paused   = False
         self._transitioning = False
         self._transition_timer = 0
+        self._exit_block_timer = 0
 
         # Reutiliza HP do player anterior
         start_y = 17 * TILE_SIZE - Player.H
@@ -318,7 +319,7 @@ class TrailScene:
 
         self.rewards = [
             RewardPickup(16 * TILE_SIZE, 14 * TILE_SIZE - 14, "heart", "Luz da trilha: +1 vida"),
-            RewardPickup(49 * TILE_SIZE, 12 * TILE_SIZE - 14, "heart", "Luz da trilha: +1 vida"),
+            RewardPickup(49 * TILE_SIZE, 14 * TILE_SIZE - 14, "heart", "Luz da trilha: +1 vida"),
             RewardPickup(82 * TILE_SIZE, 13 * TILE_SIZE - 14, "wisdom", "Fragmento ancestral: sabedoria +1"),
         ]
 
@@ -336,6 +337,7 @@ class TrailScene:
         draw_stars(self._star_surf, count=150, seed=42)
 
         self.fx.fade_in(frames=20)
+        self.sys_msg.show("A entrada so reconhece quem acende altares e guarda memorias.", 190)
         self._ready = True
 
     def handle_event(self, event):
@@ -445,6 +447,8 @@ class TrailScene:
         if self.hud.death_active:
             self.hud.update()
             return
+        if self._exit_block_timer > 0:
+            self._exit_block_timer -= 1
 
         self.time += 1
 
@@ -532,14 +536,17 @@ class TrailScene:
                 and not self._wall_hint_shown
                 and self.player.x > wall_x - 40):
             self._wall_hint_shown = True
-            self.sys_msg.show("Ative os 5 altares para abrir o caminho.", 180)
+            self.sys_msg.show("Ative os 5 altares e complete os objetivos para abrir o caminho.", 180)
 
         # Transição para caverna
         if self._portal_open and self.player.x > self.NEXT_SCENE_X - 50:
-            if not self._transitioning:
+            if self._all_objectives_done() and not self._transitioning:
                 self._transitioning = True
                 self._transition_timer = 25
                 self.fx.fade_out(25)
+            elif not self._all_objectives_done():
+                self.player.x = self.NEXT_SCENE_X - 58
+                self._show_missing_objectives()
 
         if self._transitioning:
             self._transition_timer -= 1
@@ -553,6 +560,19 @@ class TrailScene:
 
         if self.player.x < 0:
             self.player.x = 0
+
+    def _all_objectives_done(self):
+        return (
+            self._altars_activated >= len(self.altars)
+            and all(r.read for r in self.registros)
+            and all(r.collected for r in self.rewards)
+        )
+
+    def _show_missing_objectives(self):
+        if self._exit_block_timer > 0:
+            return
+        self._exit_block_timer = 90
+        self.sys_msg.show("Leia as inscricoes e pegue as recompensas antes da entrada final.", 170)
 
     def draw(self, surf):
         if not self._ready:

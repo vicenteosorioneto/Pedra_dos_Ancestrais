@@ -208,6 +208,7 @@ class ForestScene:
         self._paused   = False
         self._transitioning   = False
         self._transition_timer = 0
+        self._exit_block_timer = 0
 
         # Player — herda HP se veio de cena anterior
         start_y = 15 * TILE_SIZE - Player.H
@@ -241,6 +242,7 @@ class ForestScene:
         ]
 
         self.fx.fade_in(frames=22)
+        self.sys_msg.show("As inscricoes revelam a historia da Pedra e mudam o fim.", 180)
         self._ready = True
 
     # ── Eventos ──────────────────────────────────────────────────────────────
@@ -315,6 +317,8 @@ class ForestScene:
         if self.hud.death_active:
             self.hud.update()
             return
+        if self._exit_block_timer > 0:
+            self._exit_block_timer -= 1
 
         self.time += 1
 
@@ -384,9 +388,13 @@ class ForestScene:
 
         # Transição → RuinsScene
         if self.player.x > self.NEXT_SCENE_X - 50 and not self._transitioning:
-            self._transitioning    = True
-            self._transition_timer = 25
-            self.fx.fade_out(25)
+            if self._all_objectives_done():
+                self._transitioning    = True
+                self._transition_timer = 25
+                self.fx.fade_out(25)
+            else:
+                self.player.x = self.NEXT_SCENE_X - 58
+                self._show_missing_objectives()
 
         if self._transitioning:
             self._transition_timer -= 1
@@ -399,6 +407,19 @@ class ForestScene:
 
         if self.player.x < 0:
             self.player.x = 0
+
+    def _all_objectives_done(self):
+        return (
+            self._peregrino_talked
+            and all(r.read for r in self.registros)
+            and all(r.collected for r in self.rewards)
+        )
+
+    def _show_missing_objectives(self):
+        if self._exit_block_timer > 0:
+            return
+        self._exit_block_timer = 90
+        self.sys_msg.show("Leia as inscricoes, fale com o Peregrino e pegue as recompensas.", 160)
 
     # ── Draw ─────────────────────────────────────────────────────────────────
 

@@ -283,6 +283,7 @@ class RuinsScene:
         self._transitioning   = False
         self._transition_timer = 0
         self._altar_hint_shown = False
+        self._exit_block_timer = 0
 
         # Player
         start_y = 15 * TILE_SIZE - Player.H
@@ -322,6 +323,7 @@ class RuinsScene:
         ]
 
         self.fx.fade_in(frames=28)
+        self.sys_msg.show("Selo, inscricoes, desafio e recompensas preparam o caminho final.", 190)
         self._ready = True
 
     # ── Eventos ──────────────────────────────────────────────────────────────
@@ -411,6 +413,8 @@ class RuinsScene:
         if self.hud.death_active:
             self.hud.update()
             return
+        if self._exit_block_timer > 0:
+            self._exit_block_timer -= 1
 
         self.time += 1
 
@@ -482,9 +486,13 @@ class RuinsScene:
 
         # Transição → TrailScene
         if self.player.x > self.NEXT_SCENE_X - 50 and not self._transitioning:
-            self._transitioning    = True
-            self._transition_timer = 25
-            self.fx.fade_out(25)
+            if self._all_objectives_done():
+                self._transitioning    = True
+                self._transition_timer = 25
+                self.fx.fade_out(25)
+            else:
+                self.player.x = self.NEXT_SCENE_X - 58
+                self._show_missing_objectives()
 
         if self._transitioning:
             self._transition_timer -= 1
@@ -497,6 +505,20 @@ class RuinsScene:
 
         if self.player.x < 0:
             self.player.x = 0
+
+    def _all_objectives_done(self):
+        return (
+            self._altar_done
+            and all(r.read for r in self.registros)
+            and all(t.done for t in self.minigames)
+            and all(r.collected for r in self.rewards)
+        )
+
+    def _show_missing_objectives(self):
+        if self._exit_block_timer > 0:
+            return
+        self._exit_block_timer = 90
+        self.sys_msg.show("Ative o selo, leia as inscricoes, conclua o desafio e pegue recompensas.", 170)
 
     # ── Draw ─────────────────────────────────────────────────────────────────
 
