@@ -8,7 +8,7 @@
 
 import pygame
 import math
-from settings import PALETTE_SERTAO as P, BLACK, GOLD, SCREEN_W, SCREEN_H
+from settings import PALETTE_SERTAO as P, BLACK, GOLD, SCREEN_W, SCREEN_H, HD_UI
 from art.fx import Particle
 
 
@@ -174,6 +174,8 @@ class HUD:
     # ── Draw ─────────────────────────────────────────────────────────────────
 
     def draw(self, surf, player_hp, player_max_hp=3):
+        if HD_UI:
+            return
         self._init_fonts()
         self._draw_hp_area(surf, player_hp, player_max_hp)
         self._draw_altar_counter(surf)

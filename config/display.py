@@ -8,3 +8,4 @@ SCALE:    int = 3
 FPS:      int = 60
 TITLE:    str = "A Pedra dos Ancestrais"
 FULLSCREEN: bool = True
+HD_UI: bool = True

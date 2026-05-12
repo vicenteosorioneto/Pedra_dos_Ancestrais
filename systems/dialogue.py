@@ -9,7 +9,7 @@
 
 import pygame
 import math
-from settings import SCREEN_W, SCREEN_H, BLACK, GOLD, PALETTE_SERTAO as P
+from settings import SCREEN_W, SCREEN_H, BLACK, GOLD, PALETTE_SERTAO as P, HD_UI
 from systems.dialogue_loader import DialogueLoader
 
 _loader = DialogueLoader()
@@ -151,6 +151,8 @@ class DialogueBox:
             self.char_index += self.CHAR_SPEED
 
     def draw(self, surf):
+        if HD_UI:
+            return
         if not self.active: return
         self._init_fonts()
 
@@ -298,6 +300,8 @@ class ChoiceBox:
         if callable(cb): cb()
 
     def draw(self, surf):
+        if HD_UI:
+            return
         if not self.active: return
         self._init_font()
         bx, by, bw, bh = 28, self.BOX_Y, SCREEN_W-56, self.BOX_H
@@ -350,6 +354,8 @@ class SystemMessage:
         if self.timer > 0: self.timer -= 1
 
     def draw(self, surf):
+        if HD_UI:
+            return
         if self.timer <= 0: return
         self._init_font()
         alpha = min(255, self.timer * 8, (self.max_time - self.timer) * 8)

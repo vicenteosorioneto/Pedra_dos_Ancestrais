@@ -1,6 +1,6 @@
 # scenes/intro_scene.py — menu principal premium v4
 import pygame, math, random
-from settings import SCREEN_W, SCREEN_H, PALETTE_SERTAO as P, BLACK, GOLD
+from settings import SCREEN_W, SCREEN_H, PALETTE_SERTAO as P, BLACK, GOLD, HD_UI
 from art.fx import Particle
 from systems.audio import get_music_volume, get_sfx_volume, set_music_volume, set_sfx_volume
 
@@ -148,6 +148,9 @@ class IntroScene:
 
         _draw_pedra_castelo_large(surf, SCREEN_W//2, SCREEN_H//2+72)
         for p in self.particles: p.draw(surf)
+
+        if HD_UI:
+            return
 
         if self._screen == "main":   self._draw_main(surf)
         elif self._screen == "controls": self._draw_controls(surf)

@@ -4,7 +4,7 @@ from __future__ import annotations
 import pygame
 import sys
 
-from config.display import SCREEN_W, SCREEN_H, WINDOW_W, WINDOW_H, FPS, TITLE, FULLSCREEN
+from config.display import SCREEN_W, SCREEN_H, WINDOW_W, WINDOW_H, FPS, TITLE, FULLSCREEN, HD_UI
 from core.scene_manager import SceneManager
 from core.event_bus import EventBus
 from core.input_manager import InputManager
@@ -114,4 +114,7 @@ class Game:
         self.window.fill((0, 0, 0))
         scaled = pygame.transform.scale(self.screen, (scaled_w, scaled_h))
         self.window.blit(scaled, (offset_x, offset_y))
+        if HD_UI and (scene := self.scene_manager.current):
+            from systems.hd_ui import draw_hd_ui
+            draw_hd_ui(self.window, scene)
         pygame.display.flip()
