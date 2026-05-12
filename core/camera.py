@@ -23,9 +23,17 @@ class Camera:
         self.x += (desired_x - self.x) * self.lerp_speed
         self.y += (desired_y - self.y) * self.lerp_speed
 
-        # Clamp nas bordas do mundo
-        self.x = max(0, min(self.x, self.world_w - SCREEN_W))
-        self.y = max(0, min(self.y, self.world_h - SCREEN_H))
+        # Clamp nas bordas do mundo. Quando a tela e maior que o mapa,
+        # mantemos o mundo encostado no rodape em vez de preso no topo.
+        if self.world_w <= SCREEN_W:
+            self.x = (self.world_w - SCREEN_W) / 2
+        else:
+            self.x = max(0, min(self.x, self.world_w - SCREEN_W))
+
+        if self.world_h <= SCREEN_H:
+            self.y = self.world_h - SCREEN_H
+        else:
+            self.y = max(0, min(self.y, self.world_h - SCREEN_H))
 
     def world_to_screen(self, wx, wy):
         """Converte coordenada de mundo para tela."""

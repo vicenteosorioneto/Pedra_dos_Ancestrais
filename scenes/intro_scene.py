@@ -145,7 +145,7 @@ class IntroScene:
         pygame.draw.circle(surf,(240,235,200),(mx,my),18)
         pygame.draw.circle(surf,(200,190,140),(mx+6,my-4),12)
 
-        _draw_pedra_castelo_large(surf, SCREEN_W//2, SCREEN_H//2+20)
+        _draw_pedra_castelo_large(surf, SCREEN_W//2, SCREEN_H//2+42)
         for p in self.particles: p.draw(surf)
 
         if self._screen == "main":   self._draw_main(surf)
@@ -251,3 +251,90 @@ class IntroScene:
         surf.blit(help_txt,((W-help_txt.get_width())//2,H//2+36))
         back=self._f(9).render("[ESC / X] Voltar",True,(90,76,44))
         surf.blit(back,((W-back.get_width())//2,H//2+70))
+
+    def _draw_main(self, surf):
+        W,H = SCREEN_W, SCREEN_H
+        ft = self._f(34, bold=True)
+        title = "A PEDRA DOS ANCESTRAIS"
+        sh = ft.render(title, True, (40,20,0))
+        ts = ft.render(title, True, GOLD)
+        tx = (W-ts.get_width())//2
+        surf.blit(sh,(tx+3,30)); surf.blit(ts,(tx,27))
+        sub = self._f(16).render("Uma lenda do Piaui", True, (220,180,120))
+        surf.blit(sub,((W-sub.get_width())//2,68))
+
+        pw,ph = 300, len(MENU_ITEMS)*38+24
+        px = (W-pw)//2; py = H//2-18
+        panel = pygame.Surface((pw,ph), pygame.SRCALPHA)
+        panel.fill((8,4,18,215))
+        surf.blit(panel,(px,py))
+        pygame.draw.rect(surf,(50,40,25),(px,py,pw,ph),1)
+        pygame.draw.rect(surf,GOLD,(px+2,py+2,pw-4,ph-4),1)
+
+        fi = self._f(17)
+        for i,item in enumerate(MENU_ITEMS):
+            iy = py+14+i*38
+            sel = (i == self._sel)
+            if sel:
+                hl = pygame.Surface((pw-12,28), pygame.SRCALPHA)
+                hl.fill((220,170,40,28))
+                surf.blit(hl,(px+6,iy-3))
+                pulse = int(abs(math.sin(self.time*0.1))*5)
+                surf.blit(fi.render(">",True,GOLD),(px+18+pulse,iy))
+                col = GOLD
+            else:
+                col = (155,135,78)
+            surf.blit(fi.render(item,True,col),(px+54,iy))
+
+        ver = self._f(13).render("v4",True,(50,42,28))
+        surf.blit(ver,(W-ver.get_width()-12,H-22))
+
+    def _draw_submenu_bg(self, surf, title):
+        W,H = SCREEN_W,SCREEN_H
+        ov = pygame.Surface((W,H),pygame.SRCALPHA); ov.fill((0,0,0,185))
+        surf.blit(ov,(0,0))
+        pw,ph=440,260; px=(W-pw)//2; py=(H-ph)//2
+        panel=pygame.Surface((pw,ph),pygame.SRCALPHA); panel.fill((8,4,18,245))
+        surf.blit(panel,(px,py))
+        pygame.draw.rect(surf,(50,40,25),(px,py,pw,ph),1)
+        pygame.draw.rect(surf,GOLD,(px+2,py+2,pw-4,ph-4),1)
+        t=self._f(22,bold=True).render(title,True,GOLD)
+        surf.blit(t,((W-t.get_width())//2,py+18))
+        pygame.draw.line(surf,(60,48,24),(px+24,py+54),(px+pw-24,py+54),1)
+
+    def _draw_controls(self, surf):
+        W,H = SCREEN_W,SCREEN_H
+        self._draw_submenu_bg(surf,"CONTROLES")
+        fb=self._f(16,bold=True); fi=self._f(16)
+        y0=H//2-70
+        for i,(action,key) in enumerate(CONTROLS):
+            y=y0+i*28
+            surf.blit(fb.render(action,True,GOLD),(W//2-145,y))
+            surf.blit(fi.render(key,True,(200,178,120)),(W//2+20,y))
+        back=self._f(14).render("[ESC / X] Voltar",True,(90,76,44))
+        surf.blit(back,((W-back.get_width())//2,H//2+104))
+
+    def _draw_options(self, surf):
+        W,H = SCREEN_W,SCREEN_H
+        self._draw_submenu_bg(surf,"OPCOES")
+        fi=self._f(16)
+        rows = [
+            ("Musica", get_music_volume()),
+            ("Efeitos", get_sfx_volume()),
+        ]
+        for i,(label,value) in enumerate(rows):
+            y=H//2-42+i*42
+            selected = i == self._opt_sel
+            col = GOLD if selected else (180,160,100)
+            if selected:
+                pulse = int(abs(math.sin(self.time*0.1))*3)
+                surf.blit(fi.render(">",True,GOLD),(W//2-165+pulse,y))
+            filled = int(round(value * 10))
+            bar = "#" * filled + "-" * (10 - filled)
+            txt = f"{label}: [{bar}] {int(round(value * 100)):3d}%"
+            t=fi.render(txt,True,col)
+            surf.blit(t,((W-t.get_width())//2,y))
+        help_txt=fi.render("A/D ou setas ajusta",True,(120,100,58))
+        surf.blit(help_txt,((W-help_txt.get_width())//2,H//2+60))
+        back=self._f(14).render("[ESC / X] Voltar",True,(90,76,44))
+        surf.blit(back,((W-back.get_width())//2,H//2+104))
