@@ -421,19 +421,24 @@ class HDUIRenderer:
         w, _ = surf.get_size()
         rect = self._draw_intro_panel(surf, "CREDITOS")
         title_font = self.font(30, True)
-        body_font = self.font(27)
+        label_font = self.font(24, True)
+        body_font = self.font(24)
+        small_font = self.font(22)
         lines = [
             ("A Pedra dos Ancestrais", title_font, GOLD),
-            ("Codigo e mecanicas: projeto autoral em Python/Pygame", body_font, WHITE),
-            ("Arte, audio e efeitos: pixel art/procedural em codigo", body_font, WHITE),
-            ("Tema: plataforma narrativo no sertao brasileiro", body_font, WHITE),
-            ("Build: executavel Windows fechado com PyInstaller", body_font, WHITE),
+            ("Desenvolvido por", label_font, MUTED),
+            ("Guilherme de Abreu, Antonio Vicente, Joao Emannuel", body_font, WHITE),
+            ("Victor Gabriel e Joao Victor Melo", body_font, WHITE),
+            ("Projeto autoral em Python/Pygame", small_font, WHITE),
+            ("Inspiracao: Pedra do Castelo - Castelo do Piaui", small_font, WHITE),
+            ("Arte, audio e efeitos procedural em codigo", small_font, WHITE),
+            ("Build Windows com PyInstaller", small_font, WHITE),
         ]
-        y = rect.y + 150
+        y = rect.y + 128
         for text, font, color in lines:
-            rendered = font.render(text, True, color)
+            rendered = font.render(self._fit(font, text, rect.width - 96), True, color)
             surf.blit(rendered, ((w - rendered.get_width()) // 2, y))
-            y += 48
+            y += 38 if font != title_font else 50
         back = self.font(24).render("[ESC / X] Voltar", True, MUTED)
         surf.blit(back, ((w - back.get_width()) // 2, rect.bottom - 70))
 
