@@ -191,13 +191,21 @@ Antes de gerar o build, feche qualquer instancia aberta do jogo para o Windows n
 Com o ambiente virtual ativo:
 
 ```bash
-.venv\Scripts\python.exe -m pytest tests\test_karma.py tests\test_karma_endings.py
+.venv\Scripts\python.exe -m pytest tests\
 ```
 
 Resultado validado:
 
 ```text
-38 passed
+56 passed
+```
+
+## Documentacao
+
+O GDD completo atualizado (v4) esta em:
+
+```text
+docs/GDD_v4.md
 ```
 
 ## Estrutura do Projeto
