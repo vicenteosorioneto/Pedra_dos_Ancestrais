@@ -393,6 +393,19 @@ class CaveScene:
                         self.hud.show_interaction("ler inscrição")
                     break
 
+        # Registros da câmara da memória
+        for registro in self.registros:
+            registro.update()
+
+        # Indicador de interação com registros
+        if not self.dialogue.active and not self.choice_box.active:
+            pr = self.player.rect
+            for registro in self.registros:
+                if abs(pr.centerx - registro.rect.centerx) < 35 and abs(pr.centery - registro.rect.centery) < 45:
+                    if not registro.read:
+                        self.hud.show_interaction("ler inscrição")
+                    break
+
         self.dialogue.update()
         self.sys_msg.update()
         self.particles.update()
