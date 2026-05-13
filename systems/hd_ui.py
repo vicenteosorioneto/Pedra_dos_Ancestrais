@@ -29,6 +29,9 @@ class HDUIRenderer:
         if scene.__class__.__name__ == "IntroScene":
             self._draw_intro(surf, scene)
             return
+        if scene.__class__.__name__ == "EndingScene":
+            self._draw_ending(surf, scene)
+            return
 
         hud = getattr(scene, "hud", None)
         if hud:
@@ -242,6 +245,118 @@ class HDUIRenderer:
             for i, option in enumerate(options):
                 text = font.render(option, True, GOLD)
                 surf.blit(text, ((w - text.get_width()) // 2, h // 2 + 35 + i * 42))
+
+    def _draw_ending(self, surf, scene):
+        w, h = surf.get_size()
+        final_type = getattr(scene, "final_type", "neutro")
+        if final_type == "verdadeiro":
+            top, bottom, accent = (35, 22, 62), (88, 62, 112), (232, 198, 78)
+            title = "O LEGADO DOS ANCESTRAIS"
+        elif final_type == "ruim":
+            top, bottom, accent = (48, 9, 11), (96, 24, 18), (226, 72, 48)
+            title = "CONSUMIDO PELA PEDRA"
+        else:
+            top, bottom, accent = (28, 24, 54), (64, 58, 106), (172, 160, 218)
+            title = "UM FARDO LEVADO"
+
+        for y in range(h):
+            t = y / max(1, h - 1)
+            col = tuple(int(top[i] + (bottom[i] - top[i]) * t) for i in range(3))
+            pygame.draw.line(surf, col, (0, y), (w, y))
+
+        self._draw_ending_landscape(surf, final_type, accent)
+
+        title_font = self.font(58, True)
+        body_font = self.font(30)
+        small_font = self.font(24)
+        title_s = title_font.render(title, True, accent)
+        shadow = title_font.render(title, True, (18, 10, 18))
+        tx = (w - title_s.get_width()) // 2
+        surf.blit(shadow, (tx + 4, 70))
+        surf.blit(title_s, (tx, 66))
+        pygame.draw.line(surf, accent, (w // 2 - 360, 148), (w // 2 + 360, 148), 3)
+
+        _, body_lines, _ = scene._get_content()
+        y = 190
+        for line in [line for line in body_lines if line][:4]:
+            rendered = body_font.render(line, True, WHITE)
+            surf.blit(rendered, ((w - rendered.get_width()) // 2, y))
+            y += 42
+
+        journey_lines = scene._get_journey_lines()
+        rect = pygame.Rect((w - 700) // 2, h - 330, 700, 214)
+        self._panel(surf, rect, border=accent, alpha=188)
+        header = self.font(28, True).render("O que a Pedra reconheceu", True, accent)
+        surf.blit(header, ((w - header.get_width()) // 2, rect.y + 20))
+        for i, line in enumerate(journey_lines[:5]):
+            text = small_font.render(self._fit(small_font, line, rect.width - 74), True, WHITE)
+            surf.blit(text, (rect.x + 38, rect.y + 64 + i * 30))
+
+        summ = scene.karma.get_summary()
+        stats = (("Coragem", summ.coragem), ("Sabedoria", summ.sabedoria), ("Ganancia", summ.ganancia))
+        sx, sy = 72, h - 180
+        label_font = self.font(23, True)
+        for i, (label, value) in enumerate(stats):
+            row_y = sy + i * 42
+            surf.blit(label_font.render(label, True, MUTED), (sx, row_y))
+            pygame.draw.rect(surf, (48, 36, 28), (sx + 150, row_y + 5, 170, 20))
+            pygame.draw.rect(surf, accent, (sx + 150, row_y + 5, 34 * max(0, min(5, value)), 20))
+
+        if getattr(scene, "_blink", True):
+            hint = small_font.render("ENTER para jogar novamente", True, MUTED)
+            surf.blit(hint, ((w - hint.get_width()) // 2, h - 62))
+
+    def _draw_ending_landscape(self, surf, final_type, accent):
+        w, h = surf.get_size()
+        ground_y = int(h * 0.68)
+        pygame.draw.polygon(surf, (24, 17, 20), [(0, ground_y), (int(w * 0.22), int(h * 0.47)), (int(w * 0.45), ground_y)])
+        pygame.draw.polygon(surf, (32, 25, 34), [(int(w * 0.55), ground_y), (int(w * 0.78), int(h * 0.45)), (w, ground_y)])
+        pygame.draw.rect(surf, (18, 10, 7), (0, ground_y, w, h - ground_y))
+
+        cx, cy = w // 2, int(h * 0.42)
+        stone = (76, 66, 90) if final_type != "ruim" else (62, 42, 45)
+        points = [(cx - 170, ground_y), (cx - 120, cy - 70), (cx - 30, cy - 145), (cx + 104, cy - 96), (cx + 176, ground_y)]
+        pygame.draw.polygon(surf, (16, 10, 15), [(x + 10, y + 12) for x, y in points])
+        pygame.draw.polygon(surf, stone, points)
+        for i in range(7):
+            yy = cy - 60 + i * 44
+            pygame.draw.line(surf, accent, (cx - 70, yy), (cx + 70, yy + 10), 2)
+
+        if final_type == "verdadeiro":
+            pygame.draw.circle(surf, (236, 196, 78), (int(w * 0.79), int(h * 0.18)), 50)
+            for i in range(16):
+                ang = math.radians(i * 22.5)
+                pygame.draw.line(surf, accent, (cx, cy - 30), (cx + int(math.cos(ang) * 170), cy - 30 + int(math.sin(ang) * 90)), 2)
+        elif final_type == "ruim":
+            self._draw_hd_treasure(surf, cx, ground_y - 22, accent)
+            for i in range(9):
+                x = cx - 170 + i * 42
+                pygame.draw.line(surf, accent, (cx, cy), (x, ground_y), 2)
+        else:
+            pygame.draw.circle(surf, (202, 196, 166), (int(w * 0.78), int(h * 0.20)), 52)
+            for i in range(6):
+                x = cx - 155 + i * 62
+                pygame.draw.circle(surf, (112, 104, 154), (x, cy + int(math.sin(i) * 20)), 5)
+
+        self._draw_hd_caio(surf, cx, ground_y - 100, accent, final_type == "verdadeiro")
+
+    def _draw_hd_caio(self, surf, x, y, accent, carrying):
+        pygame.draw.circle(surf, (174, 108, 72), (x, y - 52), 18)
+        pygame.draw.rect(surf, (165, 38, 32), (x - 16, y - 34, 32, 54))
+        pygame.draw.rect(surf, (48, 64, 132), (x - 16, y + 20, 13, 55))
+        pygame.draw.rect(surf, (48, 64, 132), (x + 3, y + 20, 13, 55))
+        pygame.draw.line(surf, (174, 108, 72), (x - 16, y - 16), (x - 54, y + 22), 6)
+        pygame.draw.line(surf, (174, 108, 72), (x + 16, y - 16), (x + 54, y + 22), 6)
+        if carrying:
+            pygame.draw.circle(surf, accent, (x + 72, y + 16), 24, 3)
+            pygame.draw.line(surf, accent, (x + 58, y + 16), (x + 86, y + 16), 2)
+
+    def _draw_hd_treasure(self, surf, cx, y, accent):
+        pygame.draw.polygon(surf, (96, 44, 18), [(cx - 110, y + 42), (cx - 34, y - 18), (cx + 110, y + 42)])
+        for i in range(18):
+            x = cx - 95 + i * 11
+            col = accent if i % 2 else (174, 95, 30)
+            pygame.draw.rect(surf, col, (x, y + 22 - (i % 5) * 5, 15, 24 + (i % 5) * 5))
 
     def _draw_intro(self, surf, scene):
         screen = getattr(scene, "_screen", "main")
