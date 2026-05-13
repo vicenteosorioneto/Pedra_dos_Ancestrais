@@ -202,10 +202,10 @@ Resultado validado:
 
 ## Documentacao
 
-O GDD completo atualizado (v4) esta em:
+O GDD atualizado com a P2 esta em:
 
 ```text
-docs/GDD_v4.md
+docs/GDD.md
 ```
 
 ## Estrutura do Projeto
