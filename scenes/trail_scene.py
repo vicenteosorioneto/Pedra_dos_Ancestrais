@@ -67,7 +67,7 @@ def _build_trail_map():
                 data[row][col] = 8
 
     # 5 altares espalhados pela trilha
-    altar_positions = [(12, 17), (28, 17), (43, 17), (60, 17), (76, 17)]
+    altar_positions = [(12, 17), (28, 17), (43, 17), (67, 17), (76, 17)]
 
     # 3 inscrições de pedra (registros) ao longo da trilha
     registro_positions = [(15, 14), (49, 14), (71, 13)]
