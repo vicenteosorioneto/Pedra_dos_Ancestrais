@@ -373,6 +373,7 @@ class VillageScene:
                         cy = int(s["npc"].y + s["npc"].H // 2)
                         self.particles.emit_boss_death(cx, cy)
                         self.sys_msg.show("Zequinha... sumiu?", 150)
+                        self.dialogue.open("zequinha_sumiu", avatar_surf=s["npc"].get_avatar())
 
                 self.dialogue.open(slot["key"], avatar_surf=npc.get_avatar(), on_close=on_close)
                 return

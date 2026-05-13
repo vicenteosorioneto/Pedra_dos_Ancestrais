@@ -224,10 +224,10 @@ class ForestScene:
             BatEnemy(560, bat_y + 2),
         ]
 
-        # NPC: Peregrino (usa sprite de ElderNPC para distinção visual)
-        from entities.npc import ElderNPC
-        ground_y = 16 * TILE_SIZE - ElderNPC.H
-        self._peregrino = ElderNPC(220, ground_y)
+        # NPC: Peregrino
+        from entities.npc import PeregrinoNPC
+        ground_y = 16 * TILE_SIZE - PeregrinoNPC.H
+        self._peregrino = PeregrinoNPC(220, ground_y)
         self._peregrino_talked = False
 
         # Registros ancestrais

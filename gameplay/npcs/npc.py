@@ -3,7 +3,12 @@
 from __future__ import annotations
 import pygame
 from typing import Callable
-from art.sprites import get_npc_villager, get_npc_elder
+from art.sprites import (
+    get_npc_villager,
+    get_npc_elder,
+    get_npc_peregrino,
+    get_npc_stone_elder,
+)
 
 
 class NPC:
@@ -87,6 +92,26 @@ class ElderNPC(NPC):
             x, y,
             npc_key="zequinha",
             sprite_fn=lambda direction: get_npc_elder(direction),
+            patrol_range=0,
+        )
+
+
+class PeregrinoNPC(NPC):
+    def __init__(self, x: float, y: float) -> None:
+        super().__init__(
+            x, y,
+            npc_key="peregrino_floresta",
+            sprite_fn=lambda direction: get_npc_peregrino(direction),
+            patrol_range=0,
+        )
+
+
+class StoneElderNPC(NPC):
+    def __init__(self, x: float, y: float) -> None:
+        super().__init__(
+            x, y,
+            npc_key="velho_da_pedra",
+            sprite_fn=lambda direction: get_npc_stone_elder(direction),
             patrol_range=0,
         )
 
