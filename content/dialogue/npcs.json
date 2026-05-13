@@ -53,13 +53,19 @@
     "o tesouro não alimenta o corpo.",
     "Ele alimenta o que você mais deseja —",
     "e cobra o preço mais alto.",
+    "Se a Pedra chamar voce depois que eu sumir,",
+    "nao fuja do chamado.",
+    "Ha uma memoria nossa presa la dentro.",
     "Cuide das pessoas no caminho, menino.",
     "A pedra vê tudo que você faz antes de chegar nela.",
     "Ela sabe quem você é antes de você saber."
   ],
   "zequinha_sumiu": [
     "...Zequinha. Você carregou isso por muito tempo.",
-    "Pode descansar agora."
+    "Pode descansar agora.",
+    "O vento deixa uma lembranca: Caio precisa subir.",
+    "Nao por ouro. Por Zequinha.",
+    "A Pedra chamou a familia dele para devolver uma memoria antiga."
   ],
   "crianca": [
     "Eu desenho a Pedra todo dia.",
@@ -110,51 +116,22 @@
     "A pedra não gosta de guardiões solitários."
   ],
   "iracema_proposta": [
-    "Você chegou.",
-    "Demorou menos do que eu esperava.",
-    "Ou talvez mais. O tempo aqui dentro é diferente.",
     "Eu sou Iracema.",
     "Seu avo Zequinha chegou antes de voce.",
-    "Ele nao veio buscar ouro.",
-    "Veio pedir que alguem da familia lembrasse por ele.",
-    "Foi por isso que a Pedra chamou voce ate aqui.",
-    "Fui a última a entrar aqui por vontade própria.",
-    "Todos os outros foram trazidos.",
-    "Você não é o primeiro a procurar algo aqui dentro.",
-    "E não será o último a se perder.",
-    "Eu conheço o caminho até o coração da pedra.",
-    "Mas a pedra cobra uma dívida de quem passa.",
-    "A dívida é simples:",
-    "o que você aprender aqui dentro,",
-    "você não esconde. Você carrega.",
-    "Carrega pra fora, pra vila, pra quem quiser ouvir.",
-    "As memórias de 37 gerações não podem morrer aqui.",
-    "Zequinha encontrou a porta, mas a escolha agora e sua."
+    "Ele nao veio buscar ouro; veio pedir memoria.",
+    "Por isso a Pedra chamou Caio.",
+    "Leve o que aprender para fora.",
+    "Zequinha encontrou a porta. A escolha agora e sua."
   ],
   "iracema_aceita": [
-    "Sabia que você viria.",
-    "Sabia desde antes de você nascer.",
-    "Antes da sua mãe nascer.",
-    "Os que viveram aqui precisavam",
-    "que alguém lembrasse deles.",
-    "Não como herói. Não como lenda.",
-    "Como pessoas. Como famílias.",
-    "Como histórias que merecem ser contadas.",
-    "Vá. O caminho está aberto.",
-    "E não esqueça o que prometeu.",
-    "A pedra vai lembrar. Mesmo que você esqueça."
+    "Entao carregue.",
+    "Nao como lenda. Como gente.",
+    "A Pedra vai lembrar da sua promessa."
   ],
   "iracema_recusa": [
-    "...",
     "Tudo bem.",
-    "Não é a primeira vez que alguém recusa.",
-    "Outros virão. Sempre vêm.",
-    "Mas o caminho... você terá que achar sozinho.",
-    "E a memória que você não carregar —",
-    "ninguém vai carregar.",
-    "Pode ser que você mude de ideia lá fora.",
-    "Se mudar, a pedra vai saber.",
-    "Ela sempre sabe."
+    "O caminho continua.",
+    "Mas a memoria que voce nao levar ficara esperando."
   ],
   "velho_da_pedra": [
     "Ah... você veio subir a trilha.",
@@ -339,35 +316,26 @@
 
   "pedra_decisao": [
     "A Pedra se abre diante de Caio.",
-    "No centro, tres caminhos brilham ao mesmo tempo.",
-    "Memoria. Tesouro. Silencio.",
-    "A ultima lembranca de Zequinha pulsa entre os simbolos.",
-    "Iracema se cala. Agora a resposta precisa ser sua.",
-    "Escolha o que Caio leva para fora da Pedra."
+    "Tres caminhos brilham: memoria, tesouro e silencio.",
+    "A ultima lembranca de Zequinha pulsa.",
+    "Escolha o que Caio leva para fora."
   ],
 
   "pedra_final_memoria": [
     "Caio toca os simbolos, nao o ouro.",
-    "Cada nome gravado encontra uma voz.",
-    "A Pedra nao entrega riqueza.",
-    "Entrega responsabilidade.",
-    "A voz de Zequinha descansa, enfim.",
-    "E Caio aceita carregar a memoria dos ancestrais."
+    "Cada nome encontra uma voz.",
+    "Zequinha descansa enfim."
   ],
 
   "pedra_final_tesouro": [
     "Caio fecha a mao sobre o brilho do tesouro.",
-    "O ouro pesa mais do que parecia.",
-    "As inscricoes ao redor se apagam uma por uma.",
-    "A Pedra entende a escolha.",
-    "E cobra o preco de quem tentou possuir a memoria."
+    "As inscricoes se apagam uma por uma.",
+    "A Pedra cobra o preco."
   ],
 
   "pedra_final_silencio": [
     "Caio baixa a mao antes de tocar qualquer coisa.",
-    "Nem promessa, nem roubo.",
-    "Apenas o desejo de sair vivo.",
     "A Pedra permite a passagem.",
-    "Mas algumas vozes continuam esperando alguem que as escute."
+    "Algumas vozes continuam esperando."
   ]
 }

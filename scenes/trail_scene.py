@@ -33,7 +33,7 @@ def _build_trail_map():
     steps = [
         (2,  15, range(16, 26)),
         (3,  14, range(36, 42)),
-        (4,  13, range(60, 70)),
+        (4,  15, range(58, 63)),
     ]
     for dy, row, cols in steps:
         for col in cols:
@@ -57,7 +57,7 @@ def _build_trail_map():
         (range(22, 28), 13),
         (range(34, 40), 14),
         (range(46, 52), 14),
-        (range(58, 64), 12),
+        (range(63, 67), 14),
         (range(68, 74), 13),
         (range(78, 84), 13),
     ]
@@ -67,7 +67,7 @@ def _build_trail_map():
                 data[row][col] = 8
 
     # 5 altares espalhados pela trilha
-    altar_positions = [(12, 17), (28, 17), (43, 17), (60, 17), (76, 17)]
+    altar_positions = [(12, 17), (28, 17), (43, 17), (67, 17), (76, 17)]
 
     # 3 inscrições de pedra (registros) ao longo da trilha
     registro_positions = [(15, 14), (49, 14), (71, 13)]
@@ -297,8 +297,8 @@ class TrailScene:
         ]
 
         # NPC - Velho da Pedra (conta a história dos altares)
-        from entities.npc import ElderNPC
-        self._velho = ElderNPC(80, start_y)
+        from entities.npc import StoneElderNPC
+        self._velho = StoneElderNPC(80, start_y)
         self._velho_talked = False
 
         # 5 altares pela trilha

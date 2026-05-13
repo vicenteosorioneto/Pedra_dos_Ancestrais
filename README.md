@@ -1,26 +1,34 @@
 # A Pedra dos Ancestrais
 
-Jogo 2D de plataforma narrativo com elementos leves de RPG, ambientado no sertao nordestino brasileiro. O jogador controla Caio, um jovem guiado pelo vento ate a misteriosa Pedra dos Ancestrais, onde exploracao, combate, memoria e escolhas definem o fim da jornada.
+Jogo 2D de plataforma narrativo, ambientado no sertao piauiense e inspirado na Pedra do Castelo, em Castelo do Piaui. O jogador controla Caio, um jovem chamado por uma pedra misteriosa ligada a memoria de sua familia e de seus antepassados.
 
-## Visao Geral
+Durante a jornada, Caio explora vila, floresta, ruinas, trilha e caverna, conversa com personagens, le inscricoes, ativa altares, enfrenta inimigos e toma uma decisao final que leva a um de tres finais.
 
-- **Genero:** plataforma 2D narrativo com RPG leve
-- **Plataforma:** PC Windows
-- **Tecnologia:** Python + Pygame
-- **Entrega:** executavel `.exe` gerado com PyInstaller
-- **Resolucao interna do jogo:** 640 x 360
-- **Tela final:** fullscreen 1920 x 1080
-- **Escala do mundo:** pixel art ampliada em 3x
-- **Interface:** HUD, dialogos, menu, mensagens, game over e escolhas renderizados em Full HD
-- **Arte:** pixel art procedural gerada em codigo
-- **Audio:** trilhas e efeitos proceduralmente gerados em codigo
-- **Progressao:** menu principal -> fases -> caverna final -> escolha -> um de tres finais
+## Equipe
 
-## Executavel
+Desenvolvido por:
 
-O jogo ja foi buildado como produto fechado.
+- Guilherme de Abreu
+- Antonio Vicente
+- Joao Emannuel
+- Victor Gabriel
+- Joao Victor Melo
 
-Arquivo final:
+## Pitch
+
+**A Pedra dos Ancestrais** e um jogo de plataforma com narrativa e escolhas morais. O objetivo e chegar ao coracao da Pedra e decidir o que Caio levara para fora dela: memoria, tesouro ou silencio.
+
+O diferencial do projeto e misturar plataforma 2D, folclore regional, memoria ancestral e tres finais diferentes em um jogo autoral feito em Python/Pygame.
+
+## Inspiracao e Moral
+
+O jogo e inspirado na **Pedra do Castelo**, ponto turistico e formacao rochosa real de Castelo do Piaui, conhecida por suas grutas, saloes, pinturas rupestres e lendas locais.
+
+A moral do jogo e que **a memoria de um povo vale mais que riqueza material**. A Pedra nao guarda apenas tesouro: ela guarda nomes, historias, simbolos e lembrancas de geracoes antigas. O jogador decide se Caio respeita essa heranca, tenta se aproveitar dela ou sai sem assumir essa responsabilidade.
+
+## Entrega Final
+
+O projeto foi entregue como produto fechado em executavel Windows:
 
 ```text
 dist/PedraDosAncestrais.exe
@@ -28,99 +36,20 @@ dist/PedraDosAncestrais.exe
 
 Esse arquivo roda fora do editor e nao depende de abrir o projeto Python manualmente.
 
-## Checklist de Entrega P2
+Build final atualizado em 13/05/2026.
 
-| Requisito | Implementacao |
-| --- | --- |
-| Produto fechado | Build Windows em `dist/PedraDosAncestrais.exe` |
-| Tela de titulo | Menu principal com `Jogar`, `Creditos`, `Controles`, `Opcoes` e `Sair` |
-| Creditos | Tela propria de creditos no menu |
-| Gameplay | Fases jogaveis com plataforma, exploracao, combate, coleta, dialogos e objetivos |
-| Game Over | Ao zerar vida, aparece tela de morte com `Tentar de novo`, menu e controles |
-| Reinicio controlado | `Tentar de novo` reinicia a fase sem fechar o jogo |
-| Vitoria/progressao | Objetivos completos levam a proxima fase; o final permite jogar novamente |
-| Tres finais | No Ato 3, a decisao final da Pedra leva a memoria, tesouro ou silencio |
-| Dificuldade crescente | Exploracao inicial, desafios/altares/registros, caverna com guardiao e decisao final |
-| Derrota ativa | Inimigos e guardiao causam dano; vida zerada bloqueia gameplay e abre Game Over |
-| HUD funcional | Vida por coracoes, objetivos, contadores, mensagens e feedback visual |
-| Originalidade | Mecanicas, sistemas, arte procedural e audio procedural implementados em Python/Pygame |
+## Visao Geral Tecnica
 
-## Estrutura de Jogo
-
-### Menu Principal
-
-O jogo inicia em uma tela de titulo em Full HD com:
-
-- `Jogar`
-- `Creditos`
-- `Controles`
-- `Opcoes`
-- `Sair`
-
-### Atos e Fases
-
-| Ato/Fase | Funcao no jogo |
-| --- | --- |
-| Vila | Apresenta NPCs, coleta, desafio simples e objetivos |
-| Floresta | Introduz exploracao com registros, recompensas e inimigos |
-| Ruinas | Reforca leitura, selo ancestral e desafio de simbolos |
-| Trilha | Testa altares, registros, inimigos e abertura de passagem |
-| Caverna | Climax com registros finais, guardiao, Iracema e escolha final |
-| Final | Mostra um dos tres finais e o resumo do que o jogador fez |
-
-### Tres Finais
-
-No Ato 3, depois de derrotar o Guardiao e encontrar Iracema, a Pedra apresenta uma decisao final:
-
-| Escolha | Resultado |
-| --- | --- |
-| Carregar as memorias | Final verdadeiro |
-| Tomar o tesouro | Final ruim |
-| Partir em silencio | Final neutro |
-
-O final tambem reconhece elementos da jornada, como conversas, inscricoes, altares, recompensas, guardiao e escolha de Iracema.
-
-## Resolucao e Renderizacao
-
-O projeto usa duas camadas visuais:
-
-1. **Mundo em pixel art:** desenhado em 640 x 360 e ampliado para 1920 x 1080.
-2. **Interface HD:** textos, HUD, dialogos, menu e mensagens desenhados diretamente em Full HD.
-
-Pipeline:
-
-```text
-Mundo do jogo: 640 x 360
-        |
-        v
-Upscale pixel art 3x
-        |
-        v
-Fullscreen 1920 x 1080
-        |
-        v
-Camada HD de interface por cima
-```
-
-Isso preserva o estilo pixel art sem deixar frases e HUD borrados.
-
-Configuracao principal:
-
-```text
-config/display.py
-```
-
-Valores atuais:
-
-```python
-SCREEN_W = 640
-SCREEN_H = 360
-WINDOW_W = 1920
-WINDOW_H = 1080
-SCALE = 3
-FULLSCREEN = True
-HD_UI = True
-```
+- **Genero:** plataforma 2D narrativo
+- **Plataforma:** PC Windows
+- **Tecnologia:** Python + Pygame
+- **Build:** PyInstaller
+- **Resolucao interna:** 640 x 360
+- **Janela/tela final:** 1920 x 1080 fullscreen
+- **Estilo visual:** pixel art procedural
+- **Interface:** HUD, dialogos, menu, creditos, game over e finais em Full HD
+- **Audio:** musicas e efeitos proceduralmente gerados em codigo
+- **Progressao:** menu principal -> fases -> caverna final -> escolha -> final
 
 ## Controles
 
@@ -130,54 +59,123 @@ HD_UI = True
 | `D` / seta direita | Mover para a direita |
 | `W` / seta cima / `Espaco` | Pular |
 | `Z` ou `J` | Atacar |
-| `X` ou `K` | Interagir / confirmar dialogo |
+| `X` ou `K` | Interagir / avancar dialogo |
 | `ENTER` | Confirmar / tentar novamente |
-| `ESC` | Pausar / voltar / menu |
+| `ESC` | Pausar / voltar |
 | `M` | Voltar ao menu quando pausado |
-| `Alt + F4` | Fechar |
+| `Alt + F4` | Fechar o jogo |
+
+## Estrutura do Jogo
+
+| Parte | Funcao |
+| --- | --- |
+| Menu principal | Tela inicial com Jogar, Creditos, Controles, Opcoes e Sair |
+| Vila | Apresenta NPCs, interacao, coleta e primeiro objetivo |
+| Floresta | Introduz exploracao, registros e inimigos |
+| Ruinas | Reforca leitura, selo ancestral e desafio |
+| Trilha | Testa plataforma, altares, registros, inimigos e progressao |
+| Caverna | Climax com registros finais, Guardiao, Iracema e escolha final |
+| Final | Mostra um dos tres finais e o resumo da jornada |
+
+## Tres Finais
+
+No fim da caverna, depois do Guardiao e do encontro com Iracema, a Pedra apresenta tres escolhas:
+
+| Escolha | Resultado |
+| --- | --- |
+| Carregar as memorias | Final verdadeiro |
+| Tomar o tesouro | Final ruim |
+| Partir em silencio | Final neutro |
+
+O final tambem mostra o que a Pedra reconheceu na jornada: conversas, inscricoes, altares, recompensas, Guardiao e escolha de Iracema.
+
+## Game Loop
+
+### Loop Micro
+
+```text
+Explorar -> encontrar desafio -> pular/atacar/interagir -> receber recompensa/informacao -> completar objetivo -> avancar
+```
+
+### Loop Macro
+
+```text
+Menu -> Vila -> Floresta -> Ruinas -> Trilha -> Caverna -> Escolha final -> Final -> Jogar novamente
+```
+
+## Dificuldade Crescente
+
+| Momento | Implementacao |
+| --- | --- |
+| Apresentacao | Vila e floresta ensinam movimento, interacao, coleta e leitura |
+| Teste | Trilha combina plataformas, inimigos, altares, registros e objetivos |
+| Climax | Caverna tem Guardiao, registros finais, Iracema e decisao moral |
 
 ## HUD e Interface
 
-Durante a gameplay, a tela mostra:
+Durante a gameplay, o jogador recebe informacoes constantes:
 
-- Vida do jogador por coracoes
-- Lista de objetivos da fase
-- Contadores de progresso, como conversas, registros, altares e recompensas
-- Nome do ato/fase
+- Vida por coracoes
+- Objetivos da fase
+- Contadores de progresso
 - Prompt de interacao
 - Mensagens de sistema
-- Feedback visual ao tomar dano ou coletar recompensas
+- Feedback visual ao tomar dano, coletar item e completar objetivos
 
-A HUD antiga em pixel art foi mantida no codigo, mas a versao ativa usa `systems/hd_ui.py`, renderizada diretamente em 1920 x 1080 para maior legibilidade.
+A interface ativa fica em `systems/hd_ui.py`, renderizada diretamente em 1920 x 1080 para manter textos e HUD legiveis.
 
-## Como Rodar pelo Codigo
+## Checklist P2
 
-Crie e ative um ambiente virtual:
+| Requisito | Status |
+| --- | --- |
+| Produto fechado em `.exe` | Cumprido |
+| Tela de titulo | Cumprido |
+| Menu com Jogar, Creditos e Sair | Cumprido |
+| Gameplay jogavel | Cumprido |
+| Game Over | Cumprido |
+| Tentar novamente sem fechar | Cumprido |
+| Tela de vitoria/final | Cumprido |
+| Dificuldade crescente | Cumprido |
+| Derrota ativa | Cumprido |
+| HUD funcional | Cumprido |
+| Contadores relevantes | Cumprido |
+| Creditos da equipe | Cumprido |
+| Codigo autoral | Cumprido |
+| Build fora do editor | Cumprido |
+
+## Sistemas Principais
+
+| Sistema | Arquivo |
+| --- | --- |
+| Loop principal | `core/game.py` |
+| Menu principal | `scenes/intro_scene.py` |
+| Player | `gameplay/player/player.py` |
+| Fisica | `config/physics.py` |
+| Tilemap e colisao | `systems/tilemap.py` |
+| HUD Full HD | `systems/hd_ui.py` |
+| Dialogos | `systems/dialogue.py` |
+| Dados de dialogo | `content/dialogue/npcs.json` |
+| Karma e finais | `systems/karma.py` |
+| Audio procedural | `systems/audio.py` |
+| Recompensas | `systems/rewards.py` |
+| Efeitos visuais | `art/fx.py` |
+| Cena final | `scenes/ending_scene.py` |
+
+## Como Rodar Pelo Codigo
 
 ```bash
 python -m venv .venv
 .venv\Scripts\activate
-```
-
-Instale as dependencias:
-
-```bash
 python -m pip install -r requirements.txt
-```
-
-Execute:
-
-```bash
 python main.py
 ```
 
-## Como Gerar o .exe
+## Como Gerar o Executavel
 
 Com o ambiente virtual ativo:
 
 ```bash
-python -m pip install pyinstaller
-python -m PyInstaller --noconfirm --clean --onefile --windowed --name PedraDosAncestrais --add-data="content:content" main.py
+python -m PyInstaller PedraDosAncestrais.spec
 ```
 
 Saida:
@@ -186,95 +184,47 @@ Saida:
 dist/PedraDosAncestrais.exe
 ```
 
-Antes de rebuildar, feche qualquer instancia aberta do jogo, porque o Windows pode bloquear a substituicao do `.exe`.
+Antes de gerar o build, feche qualquer instancia aberta do jogo para o Windows nao bloquear a substituicao do `.exe`.
 
 ## Testes
 
-Execute:
+Com o ambiente virtual ativo:
 
 ```bash
-python -m pytest tests/ -v
+.venv\Scripts\python.exe -m pytest tests\test_karma.py tests\test_karma_endings.py
 ```
 
-Resultado validado na versao final:
+Resultado validado:
 
 ```text
-56 passed
+38 passed
 ```
-
-Os testes cobrem sistemas centrais como karma, finais, event bus, dialogos e estados do jogador.
-
-## Mecânicas e Sistemas
-
-| Sistema | Arquivo principal |
-| --- | --- |
-| Loop principal e render final | `core/game.py` |
-| Configuracao de tela/fullscreen | `config/display.py` |
-| Menu principal | `scenes/intro_scene.py` |
-| Movimento do jogador | `gameplay/player/player.py` |
-| Estados do jogador | `gameplay/player/states.py` |
-| Fisica e pulo | `config/physics.py` |
-| Colisao por tiles | `systems/tilemap.py` |
-| HUD e UI Full HD | `systems/hd_ui.py` |
-| HUD legado/pixel art | `systems/hud.py` |
-| Dialogos | `systems/dialogue.py` e `systems/dialogue_loader.py` |
-| Dados de dialogo | `content/dialogue/npcs.json` |
-| Sistema de karma/finais | `systems/karma.py` |
-| Audio procedural | `systems/audio.py` |
-| Recompensas | `systems/rewards.py` |
-| Minigames | `systems/minigames.py` |
-| Efeitos visuais | `art/fx.py` |
 
 ## Estrutura do Projeto
 
 ```text
-pedra_dos_ancestrais/
-|
+Pedra_dos_Ancestrais/
 |-- main.py
 |-- requirements.txt
-|-- settings.py
-|
+|-- PedraDosAncestrais.spec
 |-- config/
-|   |-- display.py
-|   |-- physics.py
-|   |-- palette.py
-|   `-- scene_ids.py
-|
 |-- core/
-|   |-- game.py
-|   |-- scene_manager.py
-|   |-- camera.py
-|   |-- event_bus.py
-|   `-- input_manager.py
-|
 |-- scenes/
-|   |-- intro_scene.py
-|   |-- village_scene.py
-|   |-- forest_scene.py
-|   |-- ruins_scene.py
-|   |-- trail_scene.py
-|   |-- cave_scene.py
-|   `-- ending_scene.py
-|
 |-- gameplay/
-|   |-- player/
-|   |-- enemies/
-|   `-- npcs/
-|
 |-- entities/
 |-- systems/
 |-- art/
 |-- content/
-|-- shared/
 |-- docs/
-`-- tests/
+|-- tests/
+|-- build/
+`-- dist/
 ```
 
 ## Observacoes de Entrega
 
 - O jogo nao comeca direto na fase.
 - O jogo nao fecha ao morrer.
-- O jogo possui tela de titulo, game over, progressao e finais.
-- O `.exe` em `dist/` e o build final devem ser entregues para avaliacao.
-- `build/`, `dist/` e arquivos `.spec` sao ignorados pelo git por serem artefatos locais de build.
-- O arquivo `settings.py` existe como compatibilidade para imports antigos; configuracoes novas ficam em `config/`.
+- O jogador pode tentar novamente sem reiniciar o programa.
+- O jogo tem menu, creditos, gameplay, HUD, game over, progressao e finais.
+- O arquivo principal para avaliacao e `dist/PedraDosAncestrais.exe`.

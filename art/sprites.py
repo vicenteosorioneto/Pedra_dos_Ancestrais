@@ -541,6 +541,111 @@ def get_npc_elder(direction=1):
 #  NPC ALDEÃO GENÉRICO — 16x32
 # ─────────────────────────────────────────────
 
+def get_npc_peregrino(direction=1):
+    key = ("peregrino", direction)
+    if key not in _cache:
+        surf = _new(16, 32)
+        skin   = (170, 115, 75)
+        cloak  = (55, 95, 82)
+        tunic  = (150, 105, 55)
+        pants  = (55, 45, 38)
+        scarf  = (210, 150, 65)
+        hair   = (45, 35, 28)
+        black  = (0, 0, 0)
+        staff  = (95, 62, 30)
+
+        for x in range(3, 13):
+            for y in range(1, 8):
+                surf.set_at((x, y), cloak)
+        for x in range(5, 11):
+            for y in range(5, 11):
+                surf.set_at((x, y), skin)
+        surf.set_at((4, 8), hair)
+        surf.set_at((11, 8), hair)
+
+        if direction == 1:
+            surf.set_at((7, 7), black)
+            surf.set_at((9, 7), black)
+        else:
+            surf.set_at((6, 7), black)
+            surf.set_at((8, 7), black)
+
+        for x in range(4, 12):
+            for y in range(12, 22):
+                surf.set_at((x, y), tunic)
+        for y in range(12, 23):
+            surf.set_at((3, y), cloak)
+            surf.set_at((12, y), cloak)
+        for x in range(5, 11):
+            surf.set_at((x, 12), scarf)
+
+        sx = 14 if direction == 1 else 1
+        for y in range(10, 32):
+            surf.set_at((sx, y), staff)
+        surf.set_at((sx, 9), staff)
+
+        for x in range(4, 12):
+            for y in range(22, 28):
+                surf.set_at((x, y), pants)
+        for x in range(3, 9):
+            surf.set_at((x, 28), black)
+        for x in range(8, 13):
+            surf.set_at((x, 28), black)
+
+        _cache[key] = _outline(surf)
+    return _cache[key]
+
+
+def get_npc_stone_elder(direction=1):
+    key = ("stone_elder", direction)
+    if key not in _cache:
+        surf = _new(16, 32)
+        skin   = (165, 120, 85)
+        robe   = (85, 80, 115)
+        sash   = (205, 145, 45)
+        hair   = (185, 190, 205)
+        black  = (0, 0, 0)
+        amber  = (230, 170, 65)
+
+        for x in range(4, 12):
+            for y in range(1, 5):
+                surf.set_at((x, y), hair)
+        surf.set_at((3, 4), hair)
+        surf.set_at((12, 4), hair)
+
+        for x in range(4, 12):
+            for y in range(5, 11):
+                surf.set_at((x, y), skin)
+        if direction == 1:
+            surf.set_at((7, 7), black)
+            surf.set_at((9, 7), black)
+        else:
+            surf.set_at((6, 7), black)
+            surf.set_at((8, 7), black)
+        for x in range(6, 10):
+            surf.set_at((x, 9), hair)
+
+        for x in range(3, 13):
+            for y in range(12, 27):
+                surf.set_at((x, y), robe)
+        for y in range(13, 24):
+            surf.set_at((7, y), sash)
+            surf.set_at((8, y), sash)
+        surf.set_at((7, 16), amber)
+        surf.set_at((8, 17), amber)
+
+        for y in range(14, 23):
+            surf.set_at((2, y), robe)
+            surf.set_at((13, y), robe)
+        for x in range(3, 8):
+            surf.set_at((x, 28), black)
+        for x in range(8, 13):
+            surf.set_at((x, 28), black)
+
+        _cache[key] = _outline(surf)
+    return _cache[key]
+
+
 def get_npc_villager(variant=0, direction=1):
     key = ("villager", variant, direction)
     if key not in _cache:

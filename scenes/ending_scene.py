@@ -234,21 +234,21 @@ class EndingScene:
         if self.final_type == "verdadeiro":
             sun_x = 505 + int(math.sin(self.time * 0.02) * 4)
             pygame.draw.circle(surf, (230, 190, 80), (sun_x, 78), 24)
+            self._draw_pedra_monument(surf, SCREEN_W // 2, 164, (85, 72, 92), accent)
+            self._draw_memory_rays(surf, SCREEN_W // 2, 150, accent)
             for x in range(60, SCREEN_W, 90):
                 pygame.draw.rect(surf, (55, 34, 18), (x, 198, 42, 40))
                 pygame.draw.polygon(surf, (95, 55, 25), [(x - 4, 198), (x + 21, 175), (x + 46, 198)])
             pygame.draw.circle(surf, (50, 90, 45), (110, 224), 18)
-            pygame.draw.rect(surf, (35, 24, 18), (314, 203, 10, 35))
-            pygame.draw.circle(surf, accent, (319, 194), 7)
-            pygame.draw.line(surf, accent, (319, 210), (300, 224), 2)
-            pygame.draw.line(surf, accent, (319, 210), (339, 224), 2)
+            self._draw_caio(surf, 320, 198, accent, carrying_memory=True)
         elif self.final_type == "ruim":
             cx, cy = SCREEN_W // 2, 168
             for r in range(90, 25, -14):
                 col = (70 + r // 4, 28, 24)
                 pygame.draw.circle(surf, col, (cx, cy), r, 2)
-            pygame.draw.rect(surf, (30, 18, 16), (cx - 8, cy + 28, 16, 42))
-            pygame.draw.circle(surf, (140, 55, 45), (cx, cy + 20), 8)
+            self._draw_pedra_monument(surf, cx, 166, (58, 42, 50), (150, 55, 40))
+            self._draw_treasure_pile(surf, cx, 220)
+            self._draw_caio(surf, cx - 6, 186, (160, 55, 40), carrying_memory=False)
             for i in range(8):
                 ox = int(math.sin(self.time * 0.04 + i) * 10)
                 pygame.draw.line(surf, (150, 55, 40), (cx, cy + 35), (cx - 80 + i * 23 + ox, base_y), 1)
@@ -257,6 +257,55 @@ class EndingScene:
             pygame.draw.circle(surf, (190, 185, 160), (moon_x, 74), 18)
             pygame.draw.polygon(surf, (38, 31, 42), [(0, base_y), (140, 160), (300, base_y)])
             pygame.draw.polygon(surf, (45, 36, 50), [(220, base_y), (370, 145), (560, base_y)])
-            pygame.draw.rect(surf, (30, 24, 28), (318, 206, 9, 32))
-            pygame.draw.circle(surf, (160, 150, 200), (322, 198), 7)
-            pygame.draw.line(surf, (120, 110, 160), (322, 238), (352, 238), 2)
+            self._draw_pedra_monument(surf, SCREEN_W // 2, 164, (55, 49, 70), (120, 110, 160))
+            self._draw_caio(surf, 322, 198, (160, 150, 200), carrying_memory=False)
+            pygame.draw.line(surf, (120, 110, 160), (322, 238), (368, 238), 2)
+            for i in range(5):
+                x = 260 + i * 28
+                y = 152 + int(math.sin(self.time * 0.04 + i) * 3)
+                pygame.draw.circle(surf, (95, 88, 130), (x, y), 2)
+
+    def _draw_pedra_monument(self, surf, cx, cy, stone, glow):
+        points = [
+            (cx - 96, cy + 74),
+            (cx - 72, cy - 34),
+            (cx - 22, cy - 78),
+            (cx + 52, cy - 52),
+            (cx + 92, cy + 74),
+        ]
+        pygame.draw.polygon(surf, (28, 20, 24), [(x + 5, y + 6) for x, y in points])
+        pygame.draw.polygon(surf, stone, points)
+        pygame.draw.line(surf, (130, 120, 140), (cx - 22, cy - 76), (cx - 52, cy + 62), 2)
+        pygame.draw.line(surf, (42, 32, 45), (cx + 46, cy - 46), (cx + 20, cy + 70), 2)
+        for i in range(7):
+            y = cy - 26 + i * 18
+            pygame.draw.line(surf, glow, (cx - 28, y), (cx + 30, y + 4), 1)
+
+    def _draw_memory_rays(self, surf, cx, cy, accent):
+        pulse = 25 + int(abs(math.sin(self.time * 0.05)) * 35)
+        for i in range(12):
+            ang = math.radians(i * 30 + self.time * 0.4)
+            x1 = cx + int(math.cos(ang) * 20)
+            y1 = cy + int(math.sin(ang) * 10)
+            x2 = cx + int(math.cos(ang) * (62 + pulse))
+            y2 = cy + int(math.sin(ang) * (26 + pulse // 2))
+            pygame.draw.line(surf, accent, (x1, y1), (x2, y2), 1)
+
+    def _draw_caio(self, surf, x, y, accent, carrying_memory=False):
+        pygame.draw.circle(surf, (170, 105, 70), (x, y - 18), 6)
+        pygame.draw.rect(surf, (170, 40, 34), (x - 5, y - 12, 10, 16))
+        pygame.draw.rect(surf, (45, 62, 130), (x - 5, y + 4, 4, 16))
+        pygame.draw.rect(surf, (45, 62, 130), (x + 1, y + 4, 4, 16))
+        pygame.draw.line(surf, (170, 105, 70), (x - 5, y - 6), (x - 16, y + 3), 2)
+        pygame.draw.line(surf, (170, 105, 70), (x + 5, y - 6), (x + 16, y + 3), 2)
+        if carrying_memory:
+            pygame.draw.circle(surf, accent, (x + 20, y), 7, 1)
+            pygame.draw.line(surf, accent, (x + 16, y), (x + 24, y), 1)
+
+    def _draw_treasure_pile(self, surf, cx, y):
+        pygame.draw.polygon(surf, (90, 45, 20), [(cx - 54, y + 16), (cx - 20, y - 4), (cx + 50, y + 16)])
+        for i in range(14):
+            x = cx - 44 + i * 7
+            h = 4 + (i % 4)
+            col = (210, 155, 45) if i % 2 else (170, 92, 35)
+            pygame.draw.rect(surf, col, (x, y + 9 - h, 8, h))

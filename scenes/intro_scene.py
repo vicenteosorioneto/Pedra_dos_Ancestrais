@@ -326,15 +326,17 @@ class IntroScene:
         fb=self._f(10,bold=True)
         lines = [
             ("A Pedra dos Ancestrais", GOLD),
-            ("Codigo e mecanicas: projeto autoral em Python/Pygame", (200,178,120)),
-            ("Arte, audio e efeitos: pixel art/procedural em codigo", (200,178,120)),
-            ("Tema: plataforma narrativo no sertao brasileiro", (200,178,120)),
+            ("Guilherme de Abreu, Antonio Vicente", (200,178,120)),
+            ("Joao Emannuel, Victor Gabriel", (200,178,120)),
+            ("Joao Victor Melo", (200,178,120)),
+            ("Projeto autoral em Python/Pygame", (200,178,120)),
+            ("Inspiracao: Pedra do Castelo - Piaui", (200,178,120)),
         ]
-        y0 = H//2-42
+        y0 = H//2-58
         for i, (line, col) in enumerate(lines):
             font = fb if i == 0 else fi
             text = font.render(line, True, col)
-            surf.blit(text, ((W-text.get_width())//2, y0+i*20))
+            surf.blit(text, ((W-text.get_width())//2, y0+i*17))
         back=self._f(9).render("[ESC / X] Voltar",True,(90,76,44))
         surf.blit(back,((W-back.get_width())//2,H//2+70))
 
